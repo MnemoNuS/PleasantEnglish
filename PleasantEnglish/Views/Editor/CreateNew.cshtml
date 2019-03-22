@@ -1,0 +1,25 @@
+﻿
+@{
+    ViewBag.Title = "Новый пост";
+	ViewBag.CurrentTab = "EditorTab";
+}
+
+<h2 class="green">Новый пост</h2>
+
+<div class="green col-md-10">
+
+	<a href="@Url.Action( "CreateArticle", "Editor" )">
+		<div class="choose-type-cell col-md-4">
+			<span class="glyphicon glyphicon-plus" aria-hidden="true" style="font-size: 30px;"></span>
+			<br />
+			Создать новую статью
+		</div>
+	</a>
+	<a href="@Url.Action( "CreatePhotoPost", "Editor" )">
+		<div class="choose-type-cell col-md-offset-2 col-md-4">
+			<span class="glyphicon glyphicon-plus" aria-hidden="true" style="font-size: 30px;"></span>
+			<br />
+			Создать новый фотопост
+		</div>
+	</a>
+</div>

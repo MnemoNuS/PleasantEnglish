@@ -1,0 +1,290 @@
+﻿@using System.Globalization
+@using PleasantEnglish.Models
+@model IEnumerable<PleasantEnglish.Models.Article>
+
+@{
+	ViewBag.Title = "Статьи";
+	ViewBag.CurrentTab = "BlogTab";
+	ViewBag.SideBar = "SearchBar";
+	ViewBag.Description = "Полезные и интересные мысли о важных вещах";
+}
+
+@if (CurrentUser != null && CurrentUser.IsInRole("Admin"))
+{
+	<div style="font-size: 28px; line-height: 36px; margin-bottom: 26px; color: #93b876;">
+		<a href="@Url.Action("CreateNew", "Editor")" style="color: #93b876; text-decoration: none;">
+			<span class="glyphicon glyphicon-plus" aria-hidden="true" style="font-size: 22px;"></span>
+			<span>Новый пост</span>
+		</a>
+	</div>
+}
+@if (ViewBag.Category != null || ViewBag.Tag != null || ViewBag.Search != null)
+{
+	<div class="sort-info">
+		@if (ViewBag.Category != null)
+		{
+			<div style="font-size: 28px; line-height: 36px; margin-bottom: 10px;">
+				<span style="color: #93b876;">Категория: </span><span>@ViewBag.Category.Name</span>
+			</div>
+		}
+		@if (ViewBag.Tag != null)
+		{
+			<div style="font-size: 28px; line-height: 36px; margin-bottom: 10px;">
+				<span class="glyphicon glyphicon-tag green" aria-hidden="true" style="font-size: 18px; transform: rotate(90deg);margin-right: -8px;"></span>
+				<span style="color: #93b876;">Тэг: </span><span>#@ViewBag.Tag.Name</span>
+			</div>
+		}
+		@if (ViewBag.Search != null)
+		{
+			<div style="font-size: 28px; line-height: 36px; margin-bottom: 10px;">
+				<span style="color: #93b876;">Вы искали: </span><span>@ViewBag.Search</span>
+			</div>
+		}
+
+		<div style="font-size: 15px; line-height: 20px;">
+			<span style="color: #93b876;">Найдено статей: </span><span>@ViewBag.TotalArticles</span>
+		</div>
+
+		<span class="sort-remove">
+			<a href="@Url.Action( "ArticlesList", "Blog", new { id = "" } )">
+				<span class="glyphicon glyphicon-remove red" aria-hidden="true" style="font-size: 22px;"></span>
+			</a>
+		</span>
+	</div>
+}
+	<span >
+		@foreach (var item in Model)
+		{
+
+			<article class="entry  article-post-thumb" itemscope itemtype="http://schema.org/Article" >
+
+				@if (item.Hide && CurrentUser != null && CurrentUser.IsInRole("Admin"))
+				{
+					<span>
+						<span class="glyphicon glyphicon-info-sign red" aria-hidden="true"></span>
+						<b class="red">Статья скрыта для всех кроме тебя</b>
+					</span>
+				}
+				@if (item.PhotoPost && CurrentUser != null && CurrentUser.IsInRole("Admin"))
+				{
+					<span>
+						<span class="glyphicon glyphicon-info-sign red" aria-hidden="true"></span>
+						<b class="red">Фотопост</b>
+					</span>
+				}
+
+				<header class="entry-header">
+
+					<h2 class="entry-title" itemprop="name">
+						@if (CurrentUser != null && CurrentUser.IsInRole("Admin"))
+						{
+
+							<a itemprop="url" href="@Url.Action( item.PhotoPost?"EditPhotoPost":"EditArticle", "Editor", new { id = item.ArticleId } )" style="color: #93b876; text-decoration: none;">
+								<span class="glyphicon glyphicon-pencil" aria-hidden="true" style="font-size: 22px;"></span>
+							</a>
+						}
+						@Html.ActionLink(
+							item.Title,
+
+							"Index",
+							"Article",
+							new
+							{
+								id = item.ArticleId,
+								tag = ViewBag.Tag != null ? ViewBag.Tag.TagId : string.Empty,
+								category = ViewBag.Category != null ? ViewBag.Category.CategoryId : string.Empty
+
+							}, null)
+
+					</h2>
+
+					<div class="entry-meta">
+						<ul>
+							<li itemprop="dateCreated">
+								@item.DateCreated.ToString("dd MMMM yyyy", CultureInfo.CurrentUICulture)
+							</li>
+							<span class="meta-sep">&bull;</span>
+							<li itemprop="articleSection">
+								@Html.ActionLink(item.Category.Name, "ArticlesList", "Blog", new { category = item.Category.CategoryId }, new { })
+							</li>
+							<span class="meta-sep">&bull;</span>
+							<li itemprop="author">Pleasant teacher</li>
+						</ul>
+					</div>
+				</header>
+
+				@if (!string.IsNullOrWhiteSpace(item.Image))
+				{
+					<div class="entry-content-media">
+						<div class="photo-post-thumb">
+							<img src="@item.Image" style="width: 100%;" itemprop="image">
+						</div>
+
+					</div>
+				}
+
+				<div class="entry-content">
+					@if (item.PhotoPost && CurrentUser != null && @item.ArticleImages.Count > 1)
+					{
+						<div class="green">
+							<span class="glyphicon glyphicon-picture"></span>
+							<span>@item.ArticleImages.Count фото</span>
+						</div>
+					}
+					<p itemprop="description">
+						@Html.Raw(HttpUtility.HtmlDecode(item.Preview.Replace("\r", "<br>")))
+					</p>
+				</div>
+
+				<div class="article-bottom">
+					<div class="views-likes">
+						<span class="glyphicon glyphicon-eye-open green eye"
+							  aria-hidden="true"></span>
+						<span class="green eye-counter">@item.ArticleWatches.Count</span>
+
+						<span name="like" article="@item.ArticleId"
+							  class="@(( @item.ArticleLikes.FirstOrDefault(
+					               l => l.UserId == CurrentUser?.UserId ) != null ? "checked" : "" ) + " likes " +
+				               ( CurrentUser != null ? "clickable" : "" ))">
+							<span class="@("glyphicon glyphicon glyphicon-heart-empty heart green empty " + ( @item.ArticleLikes.FirstOrDefault(
+						               l => l.UserId == CurrentUser?.UserId ) == null ? "show" : "hide" ))"
+								  aria-hidden="true"></span>
+							<span class="@("glyphicon glyphicon glyphicon-heart heart green full " + ( @item.ArticleLikes.FirstOrDefault(
+						               l => l.UserId == CurrentUser?.UserId ) != null ? "show" : "hide" ))"
+								  aria-hidden="true"></span>
+							<span class="green likes-counter">@item.ArticleLikes.Count</span>
+
+						</span>
+						@if (item.ArticleComments.Count > 0)
+						{
+							<span class="glyphicon glyphicon-comment green comment"
+								  aria-hidden="true"></span>
+							<span class="green comment-counter" itemprop="commentCount">@item.ArticleComments.Count</span>
+						}
+						<span class="read green" >
+							<a href="@Url.Action("Index", "Article", new { id = item.ArticleId,
+						         tag = ViewBag.Tag != null ? ViewBag.Tag.TagId : string.Empty,
+						         category = ViewBag.Category != null ? ViewBag.Category.CategoryId : string.Empty
+
+					         }, null)" itemprop="contentLocation">Читать</a>
+						</span>
+
+					</div>
+				</div>
+
+
+			</article>
+			<!-- end entry -->
+
+		}
+	</span>
+		@if (@ViewBag.TotalArticles > 0)
+		{
+			<nav class="pagination" style="text-align: left; margin: 10px 0;">
+
+				@if (ViewBag.TotalArticles > 1)
+				{
+					<label>
+						Статей на странице:
+					</label>
+					foreach (var number in new[] { 5, 10, 50, 100 })
+					{
+						if (number == ViewBag.OnPage)
+						{
+							<span class="page-numbers current">@number</span>
+						}
+						else
+						{
+							if (@ViewBag.TotalArticles > number || number <= 10)
+							{
+								@Html.ActionLink(number.ToString(), "ArticlesList", "Blog",
+									new
+									{
+										page = (ViewBag.CurrentPage),
+										onPage = number,
+										tag = ViewBag.Tag != null ? ViewBag.Tag.TagId : string.Empty,
+										category = ViewBag.Category != null ? ViewBag.Category.CategoryId : string.Empty
+									},
+									new
+									{
+										@class = "page-numbers"
+									})
+							}
+						}
+					}
+
+				}
+				<label>
+					Страница:
+				</label>
+
+				@if (ViewBag.CurrentPage != 1)
+				{
+					@Html.ActionLink("Prev", "ArticlesList", "Blog",
+						new
+						{
+							page = (ViewBag.CurrentPage - 1),
+							onPage = ViewBag.OnPage,
+							tag = ViewBag.Tag != null ? ViewBag.Tag.TagId : string.Empty,
+							category = ViewBag.Category != null ? ViewBag.Category.CategoryId : string.Empty
+						},
+						new
+						{
+							@class = "page-numbers prev"
+						})
+				}
+
+				@for (var i = 1; i <= ViewBag.Pages; i++)
+				{
+					if (i == ViewBag.CurrentPage)
+					{
+						<span class="page-numbers current">@i</span>
+					}
+					else
+					{
+						@Html.ActionLink(i.ToString(), "ArticlesList", "Blog",
+							new
+							{
+								page = i.ToString(),
+								onPage = ViewBag.OnPage,
+								tag = ViewBag.Tag != null ? ViewBag.Tag.TagId : string.Empty,
+								category = ViewBag.Category != null ? ViewBag.Category.CategoryId : string.Empty
+							},
+							new
+							{
+								@class = "page-numbers"
+							})
+					}
+				}
+
+				@if (ViewBag.CurrentPage != ViewBag.Pages)
+				{
+					@Html.ActionLink("Next", "ArticlesList", "Blog",
+						new
+						{
+							page = (ViewBag.CurrentPage + 1),
+							onPage = ViewBag.OnPage,
+							tag = ViewBag.Tag != null ? ViewBag.Tag.TagId : string.Empty,
+							category = ViewBag.Category != null ? ViewBag.Category.CategoryId : string.Empty
+						},
+						new
+						{
+							@class = "page-numbers next"
+						})
+				}
+
+			</nav>
+		}
+
+		@section scripts {
+			@if (CurrentUser != null)
+			{
+				<script type="text/javascript">
+					$(function () {
+
+
+					});
+
+				</script>
+			}
+		}

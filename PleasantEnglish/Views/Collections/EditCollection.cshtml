@@ -1,0 +1,76 @@
+﻿@model PleasantEnglish.Models.Collection
+
+@{
+	ViewBag.Title = "AddCollection";
+	ViewBag.CurrentTab = "EditorTab";
+
+}
+<a href="@Url.Action("List","Collections")" class="back-icon"><span class="glyphicon glyphicon-share-alt"></span></a>
+@using (Html.BeginForm("DeleteCollection", "Collections", FormMethod.Post, new { @class = "delete-icon right", id = @Model.CollectionId }))
+{
+	@Html.AntiForgeryToken()
+	<input hidden="hidden" id="id" name="id" value="@Model.CollectionId " />
+	<button type="submit">
+		<span class="glyphicon glyphicon-trash"></span>
+	</button>
+}
+<h2>Edit Collection</h2>
+
+
+@using (Html.BeginForm("EditCollection", "Collections", FormMethod.Post, new { @class = "col-md-12" }))
+{
+	@Html.AntiForgeryToken()
+
+	<div class="form-horizontal dictionary">
+		@Html.HiddenFor(model => model.CollectionId)
+		@Html.ValidationSummary(true, "", new { @class = "text-danger" })
+		<div class="col-md-6">
+			<div class="form-group">
+				@Html.LabelFor(model => model.ValueEn, htmlAttributes: new { @class = "control-label col-md-2" })
+				<div class="col-md-10">
+					@Html.EditorFor(model => model.ValueEn, new { htmlAttributes = new { @class = "form-control" } })
+					@Html.ValidationMessageFor(model => model.ValueEn, "", new { @class = "text-danger" })
+				</div>
+			</div>
+
+			<div class="form-group">
+				@Html.LabelFor(model => model.ValueRu, htmlAttributes: new { @class = "control-label col-md-2" })
+				<div class="col-md-10">
+					@Html.EditorFor(model => model.ValueRu, new { htmlAttributes = new { @class = "form-control" } })
+					@Html.ValidationMessageFor(model => model.ValueRu, "", new { @class = "text-danger" })
+				</div>
+			</div>
+
+			<div class="form-group">
+				@Html.LabelFor(model => model.Level, htmlAttributes: new { @class = "control-label col-md-2" })
+				<div class="col-md-10">
+					@Html.EnumDropDownListFor(model => model.Level, htmlAttributes: new { @class = "form-control" })
+					@Html.ValidationMessageFor(model => model.Level, "", new { @class = "text-danger" })
+				</div>
+			</div>
+		</div>
+		<div class="col-md-6">
+			<div class="form-group">
+				<div class="col-md-12">
+					<span class="dic-label">Изображение</span>
+					<img src="/Content/images/articles/no-image.png" width="100%" height="auto" />
+					@Html.EditorFor(model => model.Image, new { htmlAttributes = new { @class = "form-control", @style = "display:none" } })
+					@Html.ValidationMessageFor(model => model.Image, "", new { @class = "text-danger" })
+				</div>
+			</div>
+
+		</div>
+
+		<div class="form-group">
+			<div class="col-md-offset-5 col-md-6">
+				<input type="submit" value="Save" class="btn btn-default" />
+			</div>
+		</div>
+	</div>
+}
+
+
+
+@section Scripts {
+	@Scripts.Render("~/bundles/jqueryval")
+}

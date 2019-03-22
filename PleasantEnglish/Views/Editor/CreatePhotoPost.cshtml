@@ -1,0 +1,246 @@
+﻿@using System.Runtime.InteropServices.ComTypes
+@using System.Web.UI.WebControls
+@using Microsoft.Ajax.Utilities
+@using PleasantEnglish.Models
+@model PleasantEnglish.Models.ArticleEditModel
+
+@{
+	ViewBag.Title = "Создание нового фотопоста";
+	var imagePreview = string.IsNullOrWhiteSpace(Model.Image) ? "/Content/images/articles/no-image.png" : Model.Image;
+	var currentfileName = @Guid.NewGuid().ToString("N");
+}
+
+
+<h2 class="green">
+	<span class="glyphicon glyphicon-plus" aria-hidden="true" style="font-size: 22px;"></span>
+	Создание нового фотопоста
+</h2>
+
+
+
+@using (Html.BeginForm("CreatePhotoPost", "Editor", FormMethod.Post, new { @class = "col-md-10" }))
+{
+	@Html.AntiForgeryToken()
+	@Html.ValidationSummary(true, "", new { @class = "text-danger" })
+	@Html.HiddenFor(model => model.Text, new { @checked = "checked" })
+	@Html.CheckBox("PhotoPost", true, new { @class = "form-check-input hide" })
+
+
+	<div class="checkbox-inline green">
+		@Html.CheckBoxFor(model => model.Hide, htmlAttributes: new { @class = "form-check-input hide" })
+		<label class="control-label green custom-check" for="Hide">
+			<span class="glyphicon glyphicon-check green @(Model.Hide ? "":"hide")"></span>
+
+			<span class="glyphicon glyphicon-unchecked green  @(Model.Hide ? "hide":"")"></span>
+			<span>
+				@Html.DisplayNameFor(model => model.Hide)
+			</span>
+		</label>
+	</div>
+
+	<div class="checkbox-inline green">
+		@Html.CheckBoxFor(model => model.ShowOnMain, htmlAttributes: new { @class = "form-check-input hide" })
+		<label class="control-label green custom-check" for="ShowOnMain">
+			<span class="glyphicon glyphicon-check green @(Model.ShowOnMain ? "":"hide")"></span>
+
+			<span class="glyphicon glyphicon-unchecked green  @(Model.ShowOnMain ? "hide":"")"></span>
+			<span>
+				@Html.DisplayNameFor(model => model.ShowOnMain)
+			</span>
+		</label>
+	</div>
+
+	<div class="form-group">
+		@Html.LabelFor(model => model.Image, htmlAttributes: new { @class = "control-label green" })
+		<div class="image-preview-wrap">
+			<img src="@(Model.ArticleImages != null && Model.ArticleImages.Count > 0 && Model.ArticleImages.Count > 0 && Model.ArticleImages[0] != null?"/Content/images/articles/" + Model.ArticleImages[0].Name + Model.ArticleImages[0].Extention + ".[wide]" + Model.ArticleImages[0].Extention + "?timestamp=" + new DateTime().Ticks.ToString():"/Content/images/articles/no-image.png")" alt="" id="image0" style="width: 100%;">
+		</div>
+		<div>
+			<input type="button" id="setImage0" fileInputName="ImageInput0" value="Изменить изображение" class="btn btn-default col-md-12 image-button setImage" />
+		</div>
+		@if (Model.ArticleImages != null && Model.ArticleImages.Count > 0 && Model.ArticleImages[0] != null)
+		{
+			<div class="stored-image-wrap">
+				<input type="file" class="form-control hide imageInput" imageNumber="0" postType="photo" id="ImageInput0" fileName="@( $"{currentfileName}0" )" style="display: none;" />
+				<input type="text" class="form-control hide stored-image-id" id="ArticleImages[0].StoredImageId" name="ArticleImages[0].StoredImageId" value="@Model.ArticleImages[0].StoredImageId" style="display: none;">
+				<input type="text" class="form-control hide" id="ArticleImages[0].Name" name="ArticleImages[0].Name" value="@Model.ArticleImages[0].Name" style="display: none;">
+				<input type="text" class="form-control hide" id="ArticleImages[0].Type" name="ArticleImages[0].Type" value="@Model.ArticleImages[0].Type" style="display: none;">
+				<input type="text" class="form-control hide" id="ArticleImages[0].Path" name="ArticleImages[0].Path" value="@Model.ArticleImages[0].Path" style="display: none;">
+				<input type="text" class="form-control hide" id="ArticleImages[0].Extention" name="ArticleImages[0].Extention" value="@Model.ArticleImages[0].Extention" style="display: none;">
+				<input type="text" class="form-control hide" id="ArticleImages[0].Sizes" name="ArticleImages[0].Sizes" value="@Model.ArticleImages[0].Sizes" style="display: none;">
+			</div>
+		}
+		else
+		{
+			<div class="stored-image-wrap">
+				<input type="file" class="form-control hide imageInput" imageNumber="0" postType="photo" id="ImageInput0" fileName="@($"{currentfileName}0")" style="display: none;" />
+				<input type="text" class="form-control hide stored-image-id" id="ArticleImages[0].StoredImageId" name="ArticleImages[0].StoredImageId" style="display: none;">
+				<input type="text" class="form-control hide" id="ArticleImages[0].Name" name="ArticleImages[0].Name" style="display: none;">
+				<input type="text" class="form-control hide" id="ArticleImages[0].Type" name="ArticleImages[0].Type" style="display: none;">
+				<input type="text" class="form-control hide" id="ArticleImages[0].Path" name="ArticleImages[0].Path" style="display: none;">
+				<input type="text" class="form-control hide" id="ArticleImages[0].Extention" name="ArticleImages[0].Extention" style="display: none;">
+				<input type="text" class="form-control hide" id="ArticleImages[0].Sizes" name="ArticleImages[0].Sizes" style="display: none;">
+			</div>
+		}
+	</div>
+
+	<div class="form-group">
+		@Html.LabelFor(model => model.Title, htmlAttributes: new { @class = "control-label green" })
+		@Html.ValidationMessageFor(model => model.Title, "", new { @class = "text-danger" })
+		@Html.EditorFor(model => model.Title, new { htmlAttributes = new { @class = "form-control", required = "required" } })
+	</div>
+
+	<div class="form-group">
+		@Html.LabelFor(model => model.Preview, htmlAttributes: new { @class = "control-label green" })
+		@Html.ValidationMessageFor(model => model.Preview, "", new { @class = "text-danger" })
+		@Html.TextAreaFor(model => model.Preview, htmlAttributes: new { @class = "form-control", id = "preview-field", required = "required" })
+	</div>
+
+	<div class="form-group">
+		@Html.LabelFor(model => model.Category, htmlAttributes: new { @class = "control-label green" })
+		@Html.ValidationMessageFor(model => model.Category, "", new { @class = "text-danger" })
+		@Html.EditorFor(model => model.Category, new { htmlAttributes = new { @class = "form-control", id = "category", @list = "category-list", required = "required" } })
+
+		<datalist id="category-list">
+			@foreach (Category category in ViewBag.Categories)
+				{
+				<option value="@category.Name">@category.Name</option>
+				}
+		</datalist>
+	</div>
+
+	<div class="form-group">
+		@Html.LabelFor(model => model.Tags, htmlAttributes: new { @class = "control-label green" })
+		@Html.TextAreaFor(model => model.Tags, htmlAttributes: new { @class = "form-control" })
+	</div>
+
+	<h2>Дополнительные изображения</h2>
+
+	if(Model.ArticleImages != null && Model.ArticleImages.Count > 1)
+	{
+		for (int i = 1; i < Model.ArticleImages.Count; i++)
+		{
+			<div class="aditional-image stored-image-wrap" id="@($"additionalImage{i}")">
+
+			<div class="form-group col-md-6" id="@($"imageWrap{i}")">
+				<label> Изображение @i</label>
+				<div class="image-preview-wrap-small" id="@($"imagePreview{i}")">
+					<img src="/Content/images/articles/@Model.ArticleImages[i].Name@Model.ArticleImages[i].Extention.[wide]@Model.ArticleImages[i].Extention?timestamp=@(new DateTime().Millisecond.ToString())"
+					     style="max-width: 350px;max-height: 197px;"
+						  alt="" id="@( $"image{i}" )">
+					<input type="button" id="@($"setImage{i}")" fileinputname="@($"ImageInput{i}")" value="Изменить изображение" class="btn btn-default col-md-12 image-button setImage">
+				</div>
+				<input type="file" class="form-control hide imageInput" imagenumber="@i" posttype="photo" id="@($"ImageInput{i}")" filename="@currentfileName@i" style="display: none;">
+			</div>
+				<div class="form-group  col-md-6" id="textWrap @i">
+					<label for="ArticleImages[@i].Text"> Описание</label>
+					<textarea class="form-control" name="ArticleImages[@i].Text" id="ArticleImages[@i].Text" style="height: 250px;" >@Model.ArticleImages[i].Text</textarea>
+				</div>
+
+			<input type="text" class="form-control hide" id="ArticleImages[@i].Name" name="ArticleImages[@i].Name" value="@Model.ArticleImages[i].Name"  style="display: none;">
+			<input type="text" class="form-control hide" id="ArticleImages[@i].Type" name="ArticleImages[@i].Type" value="@Model.ArticleImages[i].Type" style="display: none;">
+			<input type="text" class="form-control hide stored-image-id" id="ArticleImages[@i].StoredImageId" name="ArticleImages[@i].StoredImageId" value="@Model.ArticleImages[i].StoredImageId" style="display: none;">
+			<input type="text" class="form-control hide" id="ArticleImages[@i].Path" name="ArticleImages[@i].Path" value="@Model.ArticleImages[i].Path" style="display: none;">
+			<input type="text" class="form-control hide" id="ArticleImages[@i].Extention" name="ArticleImages[@i].Extention" value="@Model.ArticleImages[i].Extention" style="display: none;">
+			<input type="text" class="form-control hide" id="ArticleImages[@i].Sizes" name="ArticleImages[@i].Sizes"  value="@Model.ArticleImages[i].Sizes" style="display: none;">
+			</div>
+
+		}
+	}
+
+
+	<div class="green add-button add-photo-button">
+		<span class="glyphicon glyphicon-plus-sign" aria-hidden="true" style="font-size: 22px;"></span>
+		Добавить фото
+	</div>
+
+	<div class="form-group">
+		<input type="submit" value="Создать" class="btn btn-default col-md-4 clean-images-before" />
+
+		<a href="@Url.Action("ArticlesList", "Blog" )">
+			<input type="button" value="Отмена" class="btn btn-default col-md-offset-4 col-md-4" />
+		</a>
+	</div>
+}
+
+
+@section scripts {
+	<script type="text/javascript">
+		$(function () {
+
+			
+			var filesName = '@currentfileName';
+
+
+
+		})</script>
+
+	<script src="~/js/tinymce/tinymce.min.js"></script>
+	@*<script src="~/js/uploadPhotos.js"></script>*@
+	<script src="~/js/uploadImage.js"></script>
+
+	<script type="text/javascript">
+		$(function () {
+
+			//window.tinymce.init({
+			//	selector: '#preview-field',
+			//	height: 200,
+			//	menubar: false,
+			//	plugins: [
+			//		'advlist autolink lists link image charmap print preview anchor textcolor',
+			//		'searchreplace visualblocks code fullscreen',
+			//		'insertdatetime media table contextmenu paste code help wordcount'
+			//	],
+			//	toolbar: 'insert | undo redo |  formatselect | bold italic backcolor  | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat | help',
+			//	content_css: [
+			//		'//fonts.googleapis.com/css?family=Lato:300,300i,400,400i',
+			//		'//www.tinymce.com/css/codepen.min.css'],
+			//	max_chars: 120, // max. allowed chars
+			//	setup: function (ed) {
+			//		var allowedKeys = [8, 37, 38, 39, 40, 46]; // backspace, delete and cursor keys
+			//		ed.on('keydown', function (e) {
+			//			if (allowedKeys.indexOf(e.keyCode) != -1) return true;
+			//			if (tinymce_getContentLength() + 1 > this.settings.max_chars) {
+			//				e.preventDefault();
+			//				e.stopPropagation();
+			//				return false;
+			//			}
+			//			return true;
+			//		});
+			//		ed.on('keyup', function (e) {
+			//			tinymce_updateCharCounter(this, tinymce_getContentLength());
+			//		});
+			//	},
+			//	init_instance_callback: function () { // initialize counter div
+			//		$('#' + this.id).prev().append('<div class="char_count" style="text-align:right"></div>');
+			//		tinymce_updateCharCounter(this, tinymce_getContentLength());
+			//	},
+			//	paste_preprocess: function (plugin, args) {
+			//		var editor = window.tinymce.get(window.tinymce.activeEditor.id);
+
+			//		var len = editor.contentDocument.body.innerText.length;
+
+			//		var text = $('<p>' + args.content + '</p>').text();
+
+			//		if (len + text.length > editor.settings.max_chars) {
+			//			alert('Pasting this exceeds the maximum allowed number of ' + editor.settings.max_chars + ' characters.');
+			//			args.content = '';
+			//		} else {
+			//			tinymce_updateCharCounter(editor, len + text.length);
+			//		}
+			//	}
+			//});
+
+			//function tinymce_updateCharCounter(el, len) {
+			//	$('#' + el.id).prev().find('.char_count').text(len + '/' + el.settings.max_chars);
+			//}
+
+			//function tinymce_getContentLength() {
+			//	var tm = window.tinymce.get(window.tinymce.activeEditor.id);
+			//	tm.save();
+			//	return tm.contentDocument.body.innerText.length;
+			//}
+		});
+	</script>
+
+}

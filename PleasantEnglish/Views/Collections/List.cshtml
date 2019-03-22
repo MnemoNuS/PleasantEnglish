@@ -1,0 +1,97 @@
+﻿@model IEnumerable<PleasantEnglish.Models.Collection>
+
+@{
+	ViewBag.Title = "List";
+	ViewBag.CurrentTab = "EditorTab";
+}
+
+
+<a href="@Url.Action("AddCollection", "Collections")" class="add-icon">
+	<span class="glyphicon glyphicon-plus-sign"></span>
+</a>
+<h2>Collections list</h2>
+<table class="table">
+	<tr>
+		<th>
+			@*//Image*@
+			<span class="glyphicon glyphicon-picture list-icon"></span>
+		</th>
+		<th>
+			<span class="glyphicon glyphicon-tag list-icon"></span>
+			<span class="list-icon">EN</span>
+		</th>
+		<th>
+			<span class="glyphicon glyphicon-tag list-icon"></span>
+			<span class="list-icon">RU</span>
+		</th>
+
+		<th>
+			@*//Level*@
+			<span class="list-icon">Level</span>
+		</th>
+		<th>
+			<span class="glyphicon glyphicon-cog list-icon"></span>
+		</th>
+	</tr>
+
+	@foreach (var item in Model)
+	{
+		<tr>
+			<td>
+				@if (string.IsNullOrEmpty(item.Image))
+				{
+					<span class="glyphicon glyphicon-remove red list-icon"></span>
+				}
+				else
+				{
+					<span class="glyphicon glyphicon-ok green list-icon"></span>
+				}
+				@*@Html.DisplayFor( modelItem => item.Image )*@
+			</td>
+
+			<td>
+				@Html.DisplayFor( modelItem => item.ValueEn )
+			</td>
+			<td>
+				@Html.DisplayFor( modelItem => item.ValueRu )
+			</td>
+			<td>
+				@Html.DisplayFor( modelItem => item.Level )
+			</td>
+			<td>
+				<a href="@Url.Action("ViewCollection", "Collections", new {id = item.CollectionId})" class="edit-icon">
+					<span class="glyphicon glyphicon-plus-sign"></span>
+				</a>
+				<a href="@Url.Action( "EditCollection", "Collections", new { id = item.CollectionId } )" class="edit-icon">
+					<span class="glyphicon glyphicon-pencil"></span>
+				</a>
+				@using( Html.BeginForm( "DeleteCollection", "Collections", FormMethod.Post, new { @class = "delete-icon", id = item.CollectionId } ) )
+				{
+					@Html.AntiForgeryToken()
+					<input hidden="hidden" id="id" name="id" value="@item.CollectionId "/>
+					<button type="submit">
+						<span class="glyphicon glyphicon-trash"></span>
+					</button>
+				}
+			</td>
+		</tr>
+	}
+
+</table>
+
+
+
+
+@*jQuery("input.suggest-user").autocomplete({
+	source: function (request, response) {
+	jQuery.get("usernames.action", {
+	query: request.term
+	}, function (data) {
+	// assuming data is a JavaScript array such as
+	// ["one@abc.de", "onf@abc.de","ong@abc.de"]
+	// and not a string
+	response(data);
+	});
+	},
+	minLength: 3
+	});*@

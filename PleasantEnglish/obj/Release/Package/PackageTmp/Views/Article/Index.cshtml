@@ -1,0 +1,341 @@
+﻿@using System.Globalization
+@using System.Web.Razor.Generator
+@using PleasantEnglish.Controllers
+@using PleasantEnglish.Models
+@model PleasantEnglish.Models.Article
+@*var comments = ViewBag.Comments as List<Comment>();*@
+
+@{
+	ViewBag.Title = Model.Title;
+	ViewBag.SideBar = "SearchBar";
+	ViewBag.Description = @Model.Preview;
+
+	var currentUser = User as CustomPrincipal;
+	var comments = @Model.ArticleComments.ToList();
+	CommentViewModel newComment = new CommentViewModel();
+}
+@section meta{
+	<meta property="vk:image" content="@(!string.IsNullOrEmpty( Model.Image ) ? $"{Request.Url.Scheme}://{Request.Url.Host}:{Request.Url.Port}{Model.Image}" :$"{Request.Url.Scheme}://{Request.Url.Host}:{Request.Url.Port}/content/images/PE_Default.png")" />
+	<meta property="og:url" content="@Request.Url.AbsoluteUri" />
+	<meta property="og:site_name" content="Pleasant English" />
+	<meta property="og:type" content="blog" />
+	<meta property="og:title" content="@Model.Title" />
+	<meta property="og:description" content="@Model.Preview" />
+	<meta property="og:image" content="@(!string.IsNullOrEmpty( Model.Image ) ? $"{Request.Url.Scheme}://{Request.Url.Host}:{Request.Url.Port}{Model.Image}" :$"{Request.Url.Scheme}://{Request.Url.Host}:{Request.Url.Port}/content/images/PE_Default.png")" />
+
+
+	<link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/jquery.jssocials/1.4.0/jssocials.css" />
+	<link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/jquery.jssocials/1.4.0/jssocials-theme-plain.css" />
+}
+@if (ViewBag.Category != null || ViewBag.Tag != null || ViewBag.Search != null)
+{
+	<div class="sort-info">
+		@if (ViewBag.Category != null)
+		{
+			<div style="font-size: 28px; line-height: 36px; margin-bottom: 10px;">
+				<span style="color: #93b876;">Категория: </span><span>@ViewBag.Category.Name</span>
+			</div>
+		}
+		@if (ViewBag.Tag != null)
+		{
+			<div style="font-size: 28px; line-height: 36px; margin-bottom: 10px;">
+				<span class="glyphicon glyphicon-tag green" aria-hidden="true" style="font-size: 18px; transform: rotate(90deg);margin-right: -8px;"></span>
+				<span style="color: #93b876;">Тэг: </span><span>#@ViewBag.Tag.Name</span>
+			</div>
+		}
+		@if (ViewBag.Search != null)
+		{
+			<div style="font-size: 28px; line-height: 36px; margin-bottom: 10px;">
+				<span style="color: #93b876;">Вы искали: </span><span>@ViewBag.Search</span>
+			</div>
+		}
+
+		<div style="font-size: 15px; line-height: 20px;">
+			<span style="color: #93b876;">Найдено статей: </span><span>@ViewBag.TotalArticles</span>
+		</div>
+
+		<span class="sort-remove">
+			<a href="@Url.Action( "Index", "Article", new { id = Model.ArticleId } )">
+				<span class="glyphicon glyphicon-remove red" aria-hidden="true" style="font-size: 22px;"></span>
+			</a>
+		</span>
+	</div>
+	<br />
+}
+
+<article class="entry full-article" itemscope itemtype="http://schema.org/Article">
+
+	<header class="entry-header">
+
+		<h2 class="entry-title" itemprop="headline">
+			@if ((User as CustomPrincipal) != null && (User as CustomPrincipal).IsInRole("Admin"))
+			{
+
+				<a href="@Url.Action(  Model.PhotoPost?"EditPhotoPost":"EditArticle", "Editor", new { id = Model.ArticleId } )" style="color: #93b876; text-decoration: none;">
+					<span class="glyphicon glyphicon-pencil" aria-hidden="true" style="font-size: 22px;"></span>
+				</a>
+			}
+			@Html.ActionLink(Model.Title, "Index", "Article", new { id = Model.ArticleId }, null)
+		</h2>
+
+		<div class="entry-meta">
+			<ul>
+				<li itemprop="dateCreated">
+					@Model.DateCreated.ToString("dd MMMM yyyy", CultureInfo.CurrentUICulture)
+				</li>
+				<span class="meta-sep">&bull;</span>
+				<li itemprop="articleSection">
+					@Html.ActionLink(Model.Category.Name, "ArticlesList", "Blog", new { category = Model.Category.CategoryId }, new { })
+				</li>
+				<span class="meta-sep">&bull;</span>
+				<li itemprop="author">Pleasant teacher</li>
+			</ul>
+
+		</div>
+
+	</header>
+
+	@if (!string.IsNullOrWhiteSpace(Model.Image))
+	{
+		<div class="entry-content-media">
+			@if (Model.ArticleImages.Count < 2)
+			{
+				<div class="post-thumb">
+					<img src="@Model.Image" style="width: 100%;" itemprop="image">
+				</div>
+			}
+			else
+			{
+				<div id="myCarousel" class="carousel slide" data-ride="carousel">
+					<!-- Indicators -->
+					<ol class="carousel-indicators">
+						@for (int i = 0; i < Model.ArticleImages.Count; i++)
+						{
+							<li data-target="#myCarousel" data-slide-to="@i" class="@( i == 0 ? "active" : "" )"></li>
+						}
+					</ol>
+
+					<!-- Wrapper for slides -->
+					<div class="carousel-inner">
+						@for (int i = 0; i < Model.ArticleImages.Count; i++)
+						{
+							List<Image> images = ViewBag.ArticleImages;
+							var image = images[i];
+							<div class="item @( i == 0 ? "active" : "" )">
+								<img src="@( "/Content/images/articles/" + image.Name + image.Extention + ".[wide]" + image.Extention + "?timestamp=" + new DateTime().Ticks.ToString() )" style="width: 100%;" itemprop="image">
+								<div class="carousel-caption">
+									<p>@image.Text</p>
+								</div>
+							</div>
+						}
+					</div>
+					<!-- Left and right controls -->
+					<a class="left carousel-control" href="#myCarousel" data-slide="prev">
+						<span class="glyphicon glyphicon-chevron-left"></span>
+						<span class="sr-only">Previous</span>
+					</a>
+					<a class="right carousel-control" href="#myCarousel" data-slide="next">
+						<span class="glyphicon glyphicon-chevron-right"></span>
+						<span class="sr-only">Next</span>
+					</a>
+				</div>
+			}
+		</div>
+	}
+	<div class="entry-content" itemprop="articleBody">
+		@if (Model.PhotoPost)
+		{
+			<p>
+				@Html.Raw(HttpUtility.HtmlDecode(Model.Preview.Replace("\r", "<br>")))
+			</p>
+		}
+		else
+		{
+			@Html.Raw(HttpUtility.HtmlDecode(Model.Text))
+		}
+	</div>
+	<!-- Share
+	================================================== -->
+	<div id="shareIcons">
+	</div>
+
+	<!-- Likes
+	================================================== -->
+	<div class="views-likes">
+
+		<span class="glyphicon glyphicon-eye-open green eye"
+			  aria-hidden="true"></span>
+		<span class="green eye-counter">@Model.ArticleWatches.Count</span>
+
+		<span name="like" article="@Model.ArticleId"
+			  class="@(( @Model.ArticleLikes.FirstOrDefault(
+			               l => l.UserId == currentUser?.UserId ) != null ? "checked" : "" ) + " likes " +
+		               ( currentUser != null ? "clickable" : "" ))">
+			<span class="@("glyphicon glyphicon glyphicon-heart-empty heart green empty " + ( @Model.ArticleLikes.FirstOrDefault(
+				               l => l.UserId == currentUser?.UserId ) == null ? "show" : "hide" ))"
+				  aria-hidden="true"></span>
+			<span class="@("glyphicon glyphicon glyphicon-heart heart green full " + ( @Model.ArticleLikes.FirstOrDefault(
+				               l => l.UserId == currentUser?.UserId ) != null ? "show" : "hide" ))"
+				  aria-hidden="true"></span>
+			<span class="green likes-counter">@Model.ArticleLikes.Count</span>
+		</span>
+		@if (Model.ArticleComments.Count > 0)
+		{
+			<span class="glyphicon glyphicon-comment green comment"
+				  aria-hidden="true"></span>
+			<span class="green comment-counter" itemprop="commentCount">@Model.ArticleComments.Count</span>
+		}
+	</div>
+
+	@if (ViewBag.Tags != null)
+	{
+
+		if (Model.ArticleTags != null && Model.ArticleTags.Count > 0)
+		{
+			var tags = ((List<Tag>)ViewBag.Tags).Where(t => Model.ArticleTags.Any(at => at.TagId == t.TagId)).ToList();
+			<div>
+				<br />
+				<p class="tags">
+					<span class="glyphicon glyphicon-tags" aria-hidden="true" style="font-size: 10px; transform: rotate(90deg);"></span>
+					<span>Тэги </span>:
+					@foreach (var tag in tags)
+					{
+						var coma = tags.LastOrDefault() != tag ? ", " : "";
+						@Html.ActionLink(tag.Name, "ArticlesList", "Blog", new { tag = tag.TagId }, new { itemprop = "articleSection" })
+						@coma
+					}
+				</p>
+			</div>
+
+		}
+	}
+
+	<ul class="post-nav group">
+		@if (ViewBag.PreviousArticle != null)
+		{
+			var previousArticle = ViewBag.PreviousArticle as Article;
+			<li class="prev">
+				<a rel="prev" href="@Url.Action( "Index", "Article",
+					                    new
+					                    {
+						                    id = previousArticle.ArticleId,
+						                    tag = ViewBag.Tag != null ? ViewBag.Tag.TagId : string.Empty,
+						                    category = ViewBag.Category != null ? ViewBag.Category.CategoryId : string.Empty
+					                    } )">
+					<strong>Предыдущая статья </strong>
+					@previousArticle.Title
+				</a>
+			</li>
+		}
+		@if (ViewBag.NextArticle != null)
+		{
+			var nextArticle = ViewBag.NextArticle as Article;
+			<li class="next">
+				<a rel="next" href="@Url.Action( "Index", "Article", new
+				                    {
+					                    id = nextArticle.ArticleId,
+					                    tag = ViewBag.Tag != null ? ViewBag.Tag.TagId : string.Empty,
+					                    category = ViewBag.Category != null ? ViewBag.Category.CategoryId : string.Empty
+				                    } )">
+					<strong>Следующая статья </strong>
+					@nextArticle.Title
+				</a>
+			</li>
+		}
+	</ul>
+
+</article>
+
+<!-- Comments
+================================================== -->
+<div id="comments">
+	@if (@User.Identity.IsAuthenticated)
+	{
+		<!-- respond -->
+		<div class="respond hide">
+
+			<h3>Оставить комментарий</h3>
+			<!-- form -->
+			<form name="commentForm" id="commentForm" method="post" action="">
+				<fieldset>
+					@Html.AntiForgeryToken()
+					<input type="hidden" name="articleId" value="@Model.ArticleId" />
+					<div class="message group">
+						<textarea name="commentText" id="commentText" name="text" rows="10" cols="50" required="required"></textarea>
+					</div>
+
+					<button type="button" class="submit send-comment" name="sendComment" id="sendComment" article="@Model.ArticleId">Отправить</button>
+
+				</fieldset>
+			</form> <!-- Form End -->
+		</div>
+		<!-- Respond End -->
+	}
+	<!-- commentlist -->
+
+	<div>
+		@if (@User.Identity.IsAuthenticated)
+		{
+
+			<span class="leave-comment green" id="leaveComment">
+				<a href="#comments">Оставить комментарий</a>
+			</span>
+		}
+		<h3 class="@(comments?.Count == 0 ? "hide" : "show")">
+			Комментарии (<span id="comments-shown">0</span>@comments.Count)
+		</h3>
+
+		<div class="@(comments?.Count == 0 ? "hide" : "show")">
+			<button type="button" id="show-comments-button" class="comments-more"> Показать предыдущие <span class="comments-left" id="comments-left">5</span></button>
+		</div>
+
+		<ol class="commentlist" class="@(comments?.Count == 0 ? "hide" : "show")">
+			@foreach (var comment in comments)
+			{
+				<li class="depth-1 comments-item">
+
+					<div class="avatar">
+						<img width="50" height="50" class="avatar" src="@($"../../images/userImg/{comment.User.UserImg ?? "u1.jpg"}")" alt="">
+					</div>
+
+					<div class="comment-content">
+
+						<div class="comment-info">
+							<cite>@comment.User.Name</cite>
+
+							<div class="comment-meta">
+								<time class="comment-time">
+									@comment.Date.ToString("dd MMMM yyyy", CultureInfo.CurrentUICulture)
+								</time>
+								@*<span class="sep">/</span><a class="reply" href="#">Reply</a>*@
+							</div>
+						</div>
+
+						<div class="comment-text">
+							<p itemprop="comment">
+								@Html.Raw(HttpUtility.HtmlDecode(comment.Text.Replace("\r", "<br>").Replace("\n", "<br>")))
+							</p>
+						</div>
+
+					</div>
+
+				</li>
+
+			}
+
+
+		</ol> <!-- Commentlist End -->
+	</div>
+</div>  <!-- Comments End -->
+
+@section scripts {
+	<script src="https://cdn.jsdelivr.net/jquery.jssocials/1.4.0/jssocials.min.js"></script>
+	<script>
+		$("#shareIcons").jsSocials({
+			showLabel: false,
+			showCount: false,
+			shares: ["twitter", "facebook", "vkontakte", "linkedin"]
+		});
+	</script>
+
+}

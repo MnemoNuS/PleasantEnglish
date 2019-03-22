@@ -1,0 +1,126 @@
+﻿@model PleasantEnglish.Models.RegisterViewModel
+@{
+	ViewBag.Title = "Регистрация нового пользователя";
+	var imageIndex = 0;
+}
+
+<h2>@ViewBag.Title.</h2>
+
+@using (Html.BeginForm("Register", "Account", FormMethod.Post, new { @class = "form-horizontal", role = "form" }))
+{
+	@Html.AntiForgeryToken()
+	@Html.ValidationSummary(false,"", new { @class = "text-danger" })
+
+
+
+	<div class="form-group">
+		@Html.LabelFor(m => m.Img, new { @class = "col-md-2 control-label" })
+		<div class="col-md-6">
+			<div style="" class="user-image-block">
+				<div id="carousel">
+					@for (int i = 1; i < 8; i++)
+					{
+						var imageName = $"u{i}.jpg";
+						if (imageName == Model?.Img)
+						{
+							imageIndex = i;
+						}
+						<img src="@($"../../images/userImg/{imageName}")" name="@imageName" width="100" height="100" alt="@($"Image{i}")" />
+					}
+				</div>
+				<div class="avatar-title">Ваш аватар</div>
+			</div>
+			@Html.TextBoxFor(m => m.Img, new { @class = "form-control hide" })
+		</div>
+	</div>
+
+	<div class="form-group">
+		@Html.LabelFor(m => m.Name, new { @class = "col-md-2 control-label" })
+
+		<div class="col-md-6">
+			@Html.TextBoxFor(m => m.Name, new { @class = "form-control" })
+		</div>
+	</div>
+	<div class="form-group">
+		@Html.LabelFor(m => m.Email, new { @class = "col-md-2 control-label" })
+		<div class="col-md-6">
+			@Html.TextBoxFor(m => m.Email, new { @class = "form-control" })
+			@Html.ValidationMessageFor(model => model.Email)
+		</div>
+	</div>
+	<div class="form-group">
+		@Html.LabelFor(m => m.Password, new { @class = "col-md-2 control-label" })
+		<div class="col-md-6">
+			@Html.PasswordFor(m => m.Password, new { @class = "form-control" })
+			@Html.ValidationMessageFor(model => model.Password)
+		</div>
+	</div>
+	<div class="form-group">
+		@Html.LabelFor(m => m.ConfirmPassword, new { @class = "col-md-2 control-label" })
+		<div class="col-md-6">
+			@Html.PasswordFor(m => m.ConfirmPassword, new { @class = "form-control" })
+			@Html.ValidationMessageFor(model => model.ConfirmPassword)
+		</div>
+	</div>
+
+	<div class="form-group">
+		<div class="col-md-offset-2 col-md-10">
+			<div class="form-group">
+				@Html.CheckBoxFor(m => m.HasAcceptedTermsAndConditions, new {@class = "form-check-input hide" })
+
+				<label class="control-label green custom-check" for="HasAcceptedTermsAndConditions" style="padding-left: 15px;">
+					<span class="glyphicon glyphicon-check green @(!Model.HasAcceptedTermsAndConditions ? "hide":"" ) "></span>
+
+					<span class="glyphicon glyphicon-unchecked green  @(Model.HasAcceptedTermsAndConditions ? "hide":"" ) "></span>
+					<span>
+						Я прочитал <a href="@Url.Action( "PrivacyPolicy", "Home" )">пользовательское соглашение</a> и согласен с ним
+					</span>
+				</label>
+
+				@Html.ValidationMessageFor(m => m.HasAcceptedTermsAndConditions)
+				@Html.Hidden(nameof(Model.IsTrue), "true")
+
+
+			</div>
+		</div>
+	</div>
+
+	<div class="form-group">
+		<div class="col-md-offset-2 col-md-10">
+			<div class="g-recaptcha" style="margin-bottom: 15px;" data-sitekey="@ViewBag.ReCaptchaKey"></div>
+		</div>
+	</div>
+
+
+
+	<div class="form-group">
+		<div class="col-md-offset-2 col-md-3">
+			<input type="submit" class="btn btn-default" value="Зарегистрировать" />
+		</div>
+	</div>
+}
+
+@section Scripts {
+	@Scripts.Render("~/bundles/jqueryval")
+	<script src="~/js/jQuery-Waterwheel-Carousel/js/jquery.waterwheelCarousel.min.js"></script>
+	<script type="text/javascript">
+		$(document).ready(function() {
+			$("#carousel").waterwheelCarousel({
+				// include options like this:
+				// (use quotes only for string values, and no trailing comma after last option)
+				// option: value,
+				// option: value
+				separation: 100,
+				flankingItems: 3,
+				horizonOffsetMultiplier: 0.2,
+				sizeMultiplier: 0.5,
+				startingItem: @imageIndex,
+				movedToCenter: function($newCenterItem) {
+					var name = $newCenterItem.attr("name");
+					var imagInput = $("#Img");
+					imagInput.val(name);
+				}
+			});
+		});
+	</script>
+}

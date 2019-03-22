@@ -1,0 +1,110 @@
+﻿@using PleasantEnglish.Models
+<div class="row">
+
+	<div class="twelve columns">
+		<ul class="social-links">
+			<li><a href="https://vk.com/public157030276"><i class="fa fa-vk"></i></a></li>
+			<li>
+				<a href="https://www.facebook.com/groups/278531102882550/"><i class="fa fa-facebook"></i></a>
+			</li>
+			@*<li><a href="#"><i class="fa fa-twitter"></i></a></li>*@
+			<li><a href="https://www.instagram.com/pleasant_english"><i class="fa fa-instagram"></i></a></li>
+			@*<li><a href="#"><i class="fa fa-google-plus"></i></a></li>
+				<li><a href="#"><i class="fa fa-github-square"></i></a></li>
+				<li><a href="#"><i class="fa fa-flickr"></i></a></li>
+				<li><a href="#"><i class="fa fa-skype"></i></a></li>*@
+		</ul>
+	</div>
+	<div class="two columns"></div>
+	<div class="six columns info">
+
+		<h3>Pleasant English</h3>
+
+		<p>
+			Это проект, который ориентирован на изучение английского языка с удовольствием. Об этом говорит и его название.
+		</p>
+
+		<p>
+			Проект Pleasant English об интересных методиках и современных подходах.
+			Он будет полезен тем, кто стремиться изучать английский язык и хочет на нем говорить.
+		</p>
+		<p>
+			<ul class="disc">
+				<li>
+					Здесь мы не ответим на вопрос «Как выучить английский во сне?» или «Как начать говорить по-английски через три дня?».
+				</li>
+				<li>
+					Здесь мы будем говорить о том, как сделать это интересно, увлекательно, как распределить силы, какой выбрать подход.
+				</li>
+				<li>
+					Здесь мы будем делиться опытом и знаниями, а я постараюсь обобщить и передать свой опыт.
+				</li>
+			</ul>
+		</p>
+
+	</div>
+
+	@*<div class="four columns">
+
+		<h3>Галерея</h3>
+
+		<ul class="photostream group">
+			@{
+				if (ViewBag.BottomPhotos != null)
+				{
+					for (var index = 0; index < ViewBag.BottomPhotos.Count; index++)
+					{
+						ArticleImage photoPost = ViewBag.BottomPhotos[index];
+						<li>
+							<a href="@Url.Action( "Index", "Article", new
+							         {
+								         id = @photoPost.ArticleId
+							         } )">
+								@{ var size = photoPost.Image.Sizes != null ? photoPost.Image.Sizes.Contains( "tiny" ) ? "[tiny]" : "[small]" : ""; }
+								<div class="bottom-image" style="background-image: url(@( "/Content/images/articles/" + @photoPost.Image.Name + @photoPost.Image.Extention + "." +size+ @photoPost.Image.Extention + "?timestamp=" + new DateTime().Ticks.ToString() ))"></div>
+							</a>
+						</li>
+					}
+				}
+			}
+		</ul>
+
+	</div>*@
+
+	<div class="two columns">
+		<h3 class="social">Навигация</h3>
+
+		<ul class="navigate group">
+			<li class="@(@ViewBag.CurrentTab == "MainTab" ? "current" :"")">
+				<a href="/">Главная</a>
+			</li>
+			@*<li class="has-children">
+					<a href="#">Dropdown</a>
+					<ul>
+						<li><a href="#">Submenu 01</a></li>
+						<li><a href="#">Submenu 02</a></li>
+						<li><a href="#">Submenu 03</a></li>
+					</ul>
+				</li>*@
+			<li class="@(@ViewBag.CurrentTab == "BlogTab" ? "current" :"")">
+				@Html.ActionLink("Статьи", "ArticlesList", "Blog")
+			</li>
+
+			<li class="@(@ViewBag.CurrentTab == "AboutTab" ? "current" :"")">
+				@Html.ActionLink("О проекте ", "About", "Home")
+			</li>
+			<li class="@(@ViewBag.CurrentTab == "ContactTab" ? "current" :"")">
+				@Html.ActionLink("Контакты", "Contact", "Home")
+			</li>
+			@*<li>
+					<a href="archives.html">Архив</a>
+				</li>*@
+
+
+		</ul> <!-- end #nav -->
+
+	</div>
+
+	<p class="copyright">&copy; Copyright 2017 - @DateTime.Now.Year PleasantEnglish &nbsp; Design by <a title="Styleshout" href="http://www.styleshout.com/">Styleshout</a>.</p>
+
+</div> <!-- End row -->

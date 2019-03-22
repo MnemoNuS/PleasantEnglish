@@ -1,0 +1,216 @@
+﻿@using PleasantEnglish.Models
+@model PleasantEnglish.Models.IndexViewModel
+@{
+	ViewBag.Title = "Редактирование данных профиля";
+	var imageIndex = 0;
+	var currentUser = User as CustomPrincipal;
+}
+
+<h2>@ViewBag.Title</h2>
+
+<div>
+	<div style="" class="section user-image-block">
+		<div class="avatar-title">
+			<b>Ваш аватар</b>
+		</div>
+		<div id="carousel">
+			@for (int i = 1; i < 8; i++)
+			{
+				var imageName = $"u{i}.jpg";
+				if (imageName == (User as CustomPrincipal)?.Img)
+				{
+					imageIndex = i;
+				}
+				<img src="@($"../../images/userImg/{imageName}")" name="@imageName" width="100" height="100" alt="@($"Image{i}")" style="display: none;" />
+			}
+		</div>
+		<form action="@Url.Action("ChangeImage")" method="post">
+			@Html.AntiForgeryToken()
+			<input type="hidden" name="NewImage" id="newImage" value="@currentUser.Img" />
+			<button type="submit" class="button profile-image hide" id="setImage" value="Использовать">Использовать</button>
+		</form>
+	</div>
+
+	<div class="section">
+		<div class="row">
+			<div class="col-md-1">
+				<b>
+					Имя:
+				</b>
+			</div>
+			<div class="col-md-6">
+				<form action="@Url.Action("ChangeName")" method="post" style="margin: 0; padding: 0;width: 100%;" class="col-md-6">
+					@Html.AntiForgeryToken()
+					<span class="show" id="currentName" style="float: left; margin-right: 15px;">
+						@currentUser.Name
+						@if ((User as CustomPrincipal) != null && currentUser.IsInRole("Admin"))
+						{
+							<span>(Админ)</span>
+						}
+					</span>
+					<input type="text" class="hide" name="NewName" id="newName" style="margin: 0; padding: 0; height: 28px; padding-left: 10px;float: left; margin-right: 15px;width: 90%;" value="@currentUser.Name" />
+					<span class="glyphicon glyphicon-pencil green" style="display: inline-block !important" aria-hidden="true" id="editName"></span>
+					<button type="submit" class="button profile-image hide" id="setName" value="Использовать" style="margin-left: 0;">Использовать</button>
+				</form>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-md-1">
+				<b>Email: </b>
+			</div>
+			<div class="col-md-6">
+				@(currentUser.Email)
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-md-1">
+				<b>Пароль: </b>
+			</div>
+			<div class="col-md-6">
+				@if (Model.HasPassword)
+				{
+					@Html.ActionLink("Сменить пароль", "ChangePassword")
+				}
+				else
+				{
+					@Html.ActionLink("Создать пароль", "SetPassword")
+				}
+			</div>
+
+		</div>
+	</div>
+
+	@*<dl class="dl-horizontal">
+			<dt>Password:</dt>
+			<dd>
+				[
+				@if( Model.HasPassword )
+				{
+					@Html.ActionLink( "Сменить пароль", "ChangePassword" )
+				}
+				else
+				{
+					@Html.ActionLink( "Создать пароль", "SetPassword" )
+				}
+				]
+			</dd>
+			<dt>External Logins:</dt>
+			<dd>
+				@Model.Logins.Count [
+				@Html.ActionLink( "Manage", "ManageLogins" ) ]
+			</dd>
+
+				Phone Numbers can used as a second factor of verification in a two-factor authentication system.
+
+				 See <a href="http://go.microsoft.com/fwlink/?LinkId=403804">this article</a>
+					for details on setting up this ASP.NET application to support two-factor authentication using SMS.
+
+				 Uncomment the following block after you have set up two-factor authentication
+
+
+				<dt>Phone Number:</dt>
+				<dd>
+					@(Model.PhoneNumber ?? "None")
+					@if (Model.PhoneNumber != null)
+					{
+						<br />
+						<text>[&nbsp;&nbsp;@Html.ActionLink("Change", "AddPhoneNumber")&nbsp;&nbsp;]</text>
+						using (Html.BeginForm("RemovePhoneNumber", "Manage", FormMethod.Post, new { @class = "form-horizontal", role = "form" }))
+						{
+							@Html.AntiForgeryToken()
+							<text>[<input type="submit" value="Remove" class="btn-link" />]</text>
+						}
+					}
+					else
+					{
+						<text>[&nbsp;&nbsp;@Html.ActionLink("Add", "AddPhoneNumber")
+					}
+				</dd>
+
+			<dt>Two-Factor Authentication:</dt>
+			<dd>
+				<p>
+					There are no two-factor authentication providers configured. See <a href="http://go.microsoft.com/fwlink/?LinkId=403804">this article</a>
+					for details on setting up this ASP.NET application to support two-factor authentication.
+				</p>
+				@if (Model.TwoFactor)
+					{
+						using (Html.BeginForm("DisableTwoFactorAuthentication", "Manage", FormMethod.Post, new { @class = "form-horizontal", role = "form" }))
+						{
+							@Html.AntiForgeryToken()
+							<text>Enabled
+							<input type="submit" value="Disable" class="btn btn-link" />
+							</text>
+						}
+					}
+					else
+					{
+						using (Html.BeginForm("EnableTwoFactorAuthentication", "Manage", FormMethod.Post, new { @class = "form-horizontal", role = "form" }))
+						{
+							@Html.AntiForgeryToken()
+							<text>Disabled
+							<input type="submit" value="Enable" class="btn btn-link" />
+							</text>
+						}
+					}
+			</dd>
+		</dl>*@
+</div>
+
+@section scripts {
+	<script src="~/js/jQuery-Waterwheel-Carousel/js/jquery.waterwheelCarousel.min.js"></script>
+	<script type="text/javascript">
+		$(document).ready(function() {
+			$("#carousel").waterwheelCarousel({
+				// include options like this:
+				// (use quotes only for string values, and no trailing comma after last option)
+				// option: value,
+				// option: value
+				separation: 100,
+				startingItem: @imageIndex,
+				flankingItems: 3,
+				horizonOffsetMultiplier: 0.2,
+				sizeMultiplier: 0.5,
+				movedToCenter: function($newCenterItem) {
+					var name = $newCenterItem.attr("name");
+					$("#newImage").val(name);
+					if (name == "@(currentUser.Img)") {
+						$("#setImage").removeClass("show").addClass("hide");
+						
+					} else {
+						$("#setImage").removeClass("hide").addClass("show");
+					}
+				}
+			});
+
+			$("#editName").on("click",
+				() => {
+					var setName = $("#setName");
+					var currentName = $("#currentName");
+					var newName = $("#newName");
+
+					if (currentName.hasClass("show")) {
+						currentName.removeClass("show").addClass("hide");
+						newName.removeClass("hide").addClass("show");
+						if ('@(currentUser.Name)' != newName.val() && setName.hasClass("hide")) {
+							setName.removeClass("hide").addClass("show");
+						}
+					} else {
+						newName.removeClass("show").addClass("hide");
+						currentName.removeClass("hide").addClass("show");
+						if (setName.hasClass("show")) {
+							setName.removeClass("show").addClass("hide");
+						}
+					}
+				});
+			$("#newName").on("change, keyUp, keyup",
+				() => {
+					var setName = $("#setName");
+					var newName = $("#newName");
+					if ('@(currentUser.Name)' != newName.val() && setName.hasClass("hide")) {
+						setName.removeClass("hide").addClass("show");
+					}
+				});
+		});
+	</script>
+}

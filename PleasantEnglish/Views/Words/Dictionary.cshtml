@@ -1,0 +1,213 @@
+﻿@model IEnumerable<PleasantEnglish.Models.WordViewModel>
+
+@{
+	ViewBag.Title = "Dictionary";
+	ViewBag.CurrentTab = "EditorTab";
+}
+
+
+<a href="@Url.Action("AddWord", "Words")" class="add-icon">
+	<span class="glyphicon glyphicon-plus-sign"></span>
+</a>
+<h2>Dictionary</h2>
+<table class="table">
+	<tr>
+		<th>
+			@*//Image*@
+			<span class="glyphicon glyphicon-picture list-icon"></span>
+		</th>
+		<th>
+			@*//Pronunciation*@
+			<span class="glyphicon glyphicon-volume-down list-icon" style="font-size: 25px;"></span>
+		</th>
+		<th>
+			<span class="glyphicon glyphicon-tag list-icon"></span>
+			<span class="list-icon">EN</span>
+		</th>
+		<th>
+			<span class="glyphicon glyphicon-tag list-icon"></span>
+			<span class="list-icon">RU</span>
+		</th>
+		<th>
+			@*//Transcription*@
+			<span class="list-icon">[ə]</span>
+
+		</th>
+		<th>
+			@*//Level*@
+			<span class="list-icon">Level</span>
+		</th>
+		<th>
+			@*//PartOfSpeach*@
+			<span class="list-icon">Part of speach</span>
+		</th>
+		<th>
+			<span class="glyphicon glyphicon-cog list-icon"></span>
+		</th>
+	</tr>
+
+	@foreach (var item in Model)
+	{
+		<tr>
+			<td>
+				@if( string.IsNullOrEmpty( item.Image ) )
+				{
+					<span class="glyphicon glyphicon-remove red list-icon"></span>
+				}
+				else
+				{
+					<span class="glyphicon glyphicon-ok green list-icon"></span>
+				}
+				@*@Html.DisplayFor( modelItem => item.Image )*@
+			</td>
+
+			<td>
+				@*@Html.DisplayFor(modelItem => item.Pronunciation)*@
+
+				<div class="play-sound @(string.IsNullOrEmpty( item.Pronunciation ) ? "disabled-btn" : "")">
+					<div title="Listen to the pronunciation" class="player-controls">
+						<span class="play">
+							@if( string.IsNullOrEmpty( item.Pronunciation ) )
+							{
+								<span class="glyphicon glyphicon-volume-off red list-icon"></span>
+							}
+							else
+							{
+								<span class="glyphicon glyphicon-volume-up green list-icon "></span>
+							}
+						</span>
+						<span class="pause">
+							<span class="glyphicon glyphicon-headphones green list-icon "></span>
+						</span>
+
+					</div>
+					<audio class="pronunciation-audio" controls src="@item.Pronunciation"></audio>
+				</div>
+
+			</td>
+
+			<td>
+				@Html.DisplayFor( modelItem => item.ValueEn )
+			</td>
+			<td>
+				@Html.DisplayFor( modelItem => item.ValueRu )
+			</td>
+			<td>
+				@if( string.IsNullOrEmpty( item.Transcription) )
+				{
+					<span class="glyphicon glyphicon-remove red list-icon"></span>
+				}
+				else
+				{
+					@Html.DisplayFor( modelItem => item.Transcription )
+				}
+			</td>
+			<td>
+				@Html.DisplayFor( modelItem => item.Level )
+			</td>
+			<td>
+				@Html.DisplayFor( modelItem => item.PartOfSpeach )
+			</td>
+			<td>
+				<a href="@Url.Action( "EditWord", "Words", new { id = item.WordId } )" class="edit-icon">
+					<span class="glyphicon glyphicon-pencil"></span>
+				</a>
+				@using( Html.BeginForm( "DeleteWord", "Words", FormMethod.Post, new { @class = "delete-icon", id = item.WordId } ) )
+				{
+					@Html.AntiForgeryToken()
+					<input hidden="hidden" id="id" name="id" value="@item.WordId "/>
+					<button type="submit">
+						<span class="glyphicon glyphicon-trash"></span>
+					</button>
+				}
+			</td>
+		</tr>
+	}
+
+</table>
+
+@section scripts {
+	<script>
+		$(".pronunciation-audio").each(function () {
+			var getaudio = $(this)[0],
+				mouseovertimer,
+				audiostatus = 'off',
+				playerControls = $(this).parent().find(".player-controls");
+
+			$(playerControls).on('mouseenter',
+				playerControls,
+				function () {
+					getaudio = $(playerControls).parent().find(".pronunciation-audio")[0];
+
+					if (!mouseovertimer) {
+
+						mouseovertimer = window.setTimeout(function () {
+
+							mouseovertimer = null;
+
+							if (!$(playerControls).hasClass("playing")) {
+
+								getaudio.load();
+								getaudio.play();
+								$(playerControls).addClass('playing');
+								return false;
+
+							}
+
+						},
+							2500);
+
+					}
+
+				});
+
+			$(playerControls).on('mouseleave',
+				playerControls,
+				function () {
+					getaudio = $(playerControls).parent().find(".pronunciation-audio")[0];
+
+					if (mouseovertimer) {
+
+						window.clearTimeout(mouseovertimer);
+						mouseovertimer = null;
+
+					}
+
+				});
+
+			$(playerControls).on('click touch',
+				playerControls,
+				function (e) {
+					getaudio = $(playerControls).parent().find(".pronunciation-audio")[0];
+					e.preventDefault();
+					if (!$(playerControls).hasClass("playing")) {
+						if (audiostatus == 'off') {
+							$(playerControls).addClass('playing');
+							getaudio.load();
+							getaudio.play();
+							window.clearTimeout(mouseovertimer);
+							audiostatus = 'on';
+							return false;
+
+						} else if (audiostatus == 'on') {
+							$(playerControls).addClass('playing');
+							getaudio.play();
+						}
+					} else if ($(playerControls).hasClass("playing")) {
+						getaudio.pause();
+						$(playerControls).removeClass('playing');
+						window.clearTimeout(mouseovertimer);
+						audiostatus = 'on';
+					}
+					return false;
+				});
+
+			$(this).on('ended',
+				function () {
+					getaudio = $(playerControls).parent().find(".pronunciation-audio")[0];
+					$(playerControls).removeClass('playing');
+					audiostatus = 'off';
+				});
+		});
+	</script>
+}

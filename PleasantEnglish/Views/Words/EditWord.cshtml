@@ -1,0 +1,376 @@
+﻿@model PleasantEnglish.Models.Word
+
+@{
+	ViewBag.Title = "EditWords";
+	ViewBag.CurrentTab = "EditorTab";
+}
+<a href="@Url.Action("Dictionary","Words")" class="back-icon"><span class="glyphicon glyphicon-share-alt"></span></a>
+@using (Html.BeginForm("DeleteWord", "Words", FormMethod.Post, new { @class = "delete-icon right", id = @Model.WordId }))
+{
+	@Html.AntiForgeryToken()
+	<input hidden="hidden" id="id" name="id" value="@Model.WordId " />
+	<button type="submit">
+		<span class="glyphicon glyphicon-trash"></span>
+	</button>
+}
+<h2>Edit word</h2>
+
+@using (Html.BeginForm("EditWord", "Words", FormMethod.Post, new { @class = "col-md-12" }))
+{
+	@Html.AntiForgeryToken()
+
+	<div class="form-horizontal dictionary">
+		@Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+		@Html.HiddenFor(model => model.WordId)
+
+		<div class="col-md-4">
+
+			<div class="form-group">
+				<div class="col-md-12">
+					@Html.EditorFor(model => model.ValueEn, new { htmlAttributes = new { @class = "form-control", placeholder = "Слово по английски" } })
+					@Html.ValidationMessageFor(model => model.ValueEn, "", new { @class = "text-danger" })
+				</div>
+			</div>
+
+			<div class="form-group">
+				<div class="col-md-12">
+					@Html.EditorFor(model => model.ValueRu, new { htmlAttributes = new { @class = "form-control", placeholder = "Слово по русски" } })
+					@Html.ValidationMessageFor(model => model.ValueRu, "", new { @class = "text-danger" })
+				</div>
+			</div>
+
+			<div class="form-group">
+				<div class="col-md-12">
+					@Html.EditorFor(model => model.Transcription, new { htmlAttributes = new { @class = "form-control", placeholder = "Транскрипция" } })
+					@Html.ValidationMessageFor(model => model.Transcription, "", new { @class = "text-danger" })
+				</div>
+			</div>
+		</div>
+
+		<div class="col-md-4">
+
+
+			<div class="form-group">
+				<div class="col-md-12">
+					<span class="dic-label">Уровень</span>
+
+					@Html.EnumDropDownListFor(model => model.Level, htmlAttributes: new { @class = "form-control", style = "margin-bottom: 7px;" })
+					@Html.ValidationMessageFor(model => model.Level, "", new { @class = "text-danger" })
+				</div>
+			</div>
+
+			<div class="form-group">
+				<div class="col-md-12" style="margin-top: 20px;">
+					<span class="dic-label">Часть речи</span>
+					@Html.EnumDropDownListFor(model => model.PartOfSpeach, htmlAttributes: new { @class = "form-control" })
+					@Html.ValidationMessageFor(model => model.PartOfSpeach, "", new { @class = "text-danger" })
+				</div>
+			</div>
+
+			<div class="form-group">
+				<div class="col-md-12">
+					<span class="dic-label">Произношение</span>
+
+					@Html.EditorFor(model => model.Pronunciation, new { htmlAttributes = new { @class = "form-control", @style = " display: none" } })
+
+					<div class="pr-buttons edit">
+						<div title="Listen to the pronunciation" class="player-controls  @(string.IsNullOrEmpty(Model.Pronunciation)?"disabled-btn":"")">
+							<span class="play"></span>
+							<span class="pause"></span>
+						</div>
+						<div class="record-sound  @(string.IsNullOrEmpty(Model.Pronunciation)?"disabled-btn":"") edit"></div>
+						<div class="record-time "><div id="currentTime">00:00</div>/<div id="duration">00:00</div></div>
+						<div class="record-btns">
+							<span class="red-dot"></span>
+							<button class="record" onclick="startRecording(this);">record</button>
+							<button class="stop" onclick="stopRecording(this);" disabled style="display: none">stop</button>
+						</div>
+						<audio class="pronunciation-audio" controls src="@Html.ValueFor(model=>model.Pronunciation)" ontimeupdate='updateTrackTime(this);'></audio>
+					</div>
+				</div>
+
+			</div>
+		</div>
+
+		<div class="col-md-4">
+
+
+
+			<div class="form-group">
+				<div class="col-md-12">
+					<span class="dic-label">Изображение</span>
+					<img src="/Content/images/articles/no-image.png" width="100%" height="auto" />
+					@Html.EditorFor(model => model.Image, new { htmlAttributes = new { @class = "form-control", @style = "display:none" } })
+					@Html.ValidationMessageFor(model => model.Image, "", new { @class = "text-danger" })
+				</div>
+			</div>
+		</div>
+
+		<div class="form-group">
+			<div class="col-md-offset-5 col-md-6">
+				<input type="submit" value="Save" class="btn btn-default" />
+			</div>
+		</div>
+	</div>
+}
+
+
+
+
+@section scripts {
+	<script src="~/js/recorder.js"></script>
+
+	<script>
+		var onFail = function (e) {
+			console.log('Rejected!', e);
+		};
+
+		var onSuccess = function (s) {
+			var context = new AudioContext();
+			var mediaStreamSource = context.createMediaStreamSource(s);
+			recorder = new Recorder(mediaStreamSource);
+			recorder.record();
+
+			// audio loopback
+			// mediaStreamSource.connect(context.destination);
+		}
+
+		window.URL = window.URL || window.webkitURL;
+		navigator.getUserMedia = navigator.getUserMedia ||
+			navigator.webkitGetUserMedia ||
+			navigator.mozGetUserMedia ||
+			navigator.msGetUserMedia;
+
+		var recorder;
+		var audio = document.querySelector('audio');
+		var recordTimer;
+		var recordTime = 0;
+
+		function countRecordSeconds() {
+			recordTimer = setTimeout(function () {
+				recordTime++;
+				var durationDiv = document.getElementById('duration');
+				durationDiv.innerHTML = formatSecondsAsTime(recordTime);
+				countRecordSeconds();
+			}, 1000);
+		}
+
+		function stopRecordTimer() {
+			clearTimeout(recordTimer);
+			setTimeout(function () {
+				recordTime = 0;
+			}, 1000);
+		}
+
+		function startRecording(button) {
+
+			if (navigator.getUserMedia) {
+				navigator.getUserMedia({ audio: true }, onSuccess, onFail);
+			} else {
+				console.log('navigator.getUserMedia not present');
+			}
+
+			$(".record").hide();
+			$(".player-controls").addClass("disabled-btn");
+			$(".stop").show();
+			//recorder && recorder.record();
+			button.disabled = true;
+			button.nextElementSibling.disabled = false;
+			countRecordSeconds();
+		}
+
+		function stopRecording(button) {
+			$(".stop").hide();
+			$(".record").show();
+			$(".record-sound").removeClass("disabled-btn");
+			$(".player-controls").removeClass("disabled-btn");
+
+			recorder.stop();
+			stopRecordTimer();
+
+			button.disabled = true;
+			button.previousElementSibling.disabled = false;
+			createDownloadLink();
+			recorder.clear();
+		}
+
+		function createDownloadLink() {
+			recorder &&
+				recorder.exportWAV(function (blob) {
+					var url = URL.createObjectURL(blob);
+					//var li = document.createElement('li');
+					//var au = document.createElement('audio');
+					//var hf = document.createElement('a');
+
+					//au.controls = true;
+					//au.src = url;
+					//hf.href = url;
+					//hf.download = new Date().toISOString() + '.wav';
+					//hf.innerHTML = hf.download;
+					//li.appendChild(au);
+					//li.appendChild(hf);
+					//recordingslist.appendChild(li);
+					var reader = new FileReader();
+					reader.readAsDataURL(blob);
+					reader.onloadend = function () {
+						var base64Data = reader.result;
+						$("#Pronunciation").val(base64Data);
+						$(".pronunciation-audio").attr("src", base64Data);
+					}
+				});
+		}
+
+		function init() {
+			try {
+				// webkit shim
+				window.AudioContext = window.AudioContext || window.webkitAudioContext;
+				navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia;
+				window.URL = window.URL || window.webkitURL;
+
+				audio_context = new AudioContext();
+				//__log('Audio context set up.');
+				//__log('navigator.getUserMedia ' + (navigator.getUserMedia ? 'available.' : 'not present!'));
+			} catch (e) {
+				alert('No web audio support in this browser!');
+			}
+
+			navigator.getUserMedia({ audio: true },
+				startUserMedia,
+				function (e) {
+					alert('No live audio input: ' + e);
+				});
+		};
+	</script>
+
+	<script>
+		$(".pronunciation-audio").each(function () {
+			var getaudio = $(this)[0],
+				mouseovertimer,
+				audiostatus = 'off',
+				playerControls = $(this).parent().find(".player-controls");
+
+			$(playerControls).on('mouseenter',
+				playerControls,
+				function () {
+					getaudio = $(playerControls).parent().find(".pronunciation-audio")[0];
+
+					if (!mouseovertimer) {
+
+						mouseovertimer = window.setTimeout(function () {
+
+							mouseovertimer = null;
+
+							if (!$(playerControls).hasClass("playing")) {
+
+								getaudio.load();
+								getaudio.play();
+								$(playerControls).addClass('playing');
+								return false;
+
+							}
+
+						},
+							2500);
+
+					}
+
+				});
+
+			$(playerControls).on('mouseleave',
+				playerControls,
+				function () {
+					getaudio = $(playerControls).parent().find(".pronunciation-audio")[0];
+
+					if (mouseovertimer) {
+
+						window.clearTimeout(mouseovertimer);
+						mouseovertimer = null;
+
+					}
+
+				});
+
+			$(playerControls).on('click touch',
+				playerControls,
+				function (e) {
+					getaudio = $(playerControls).parent().find(".pronunciation-audio")[0];
+
+					e.preventDefault();
+
+					if (!$(playerControls).hasClass("playing")) {
+
+						if (audiostatus == 'off') {
+
+							$(playerControls).addClass('playing');
+							getaudio.load();
+							getaudio.play();
+							window.clearTimeout(mouseovertimer);
+							audiostatus = 'on';
+							return false;
+
+						} else if (audiostatus == 'on') {
+
+							$(playerControls).addClass('playing');
+							getaudio.play();
+
+						}
+
+					} else if ($(playerControls).hasClass("playing")) {
+
+						getaudio.pause();
+						$(playerControls).removeClass('playing');
+						window.clearTimeout(mouseovertimer);
+						audiostatus = 'on';
+
+					}
+
+					return false;
+
+				});
+
+			$(this).on('ended',
+				function () {
+					getaudio = $(playerControls).parent().find(".pronunciation-audio")[0];
+
+					$(playerControls).removeClass('playing');
+					audiostatus = 'off';
+					var currTimeDiv = document.getElementById('currentTime');
+					currTimeDiv.innerHTML = formatSecondsAsTime(0);
+
+				});
+		});
+
+		function updateTrackTime(track) {
+			var durationDiv = document.getElementById('duration');
+			var currTimeDiv = document.getElementById('currentTime');
+
+			var currTime = Math.floor(track.currentTime).toString();
+			var duration = Math.floor(track.duration).toString();
+
+			currTimeDiv.innerHTML = formatSecondsAsTime(currTime);
+
+			if (isNaN(duration)) {
+				//durationDiv.innerHTML = '00:00';
+			} else {
+				durationDiv.innerHTML = formatSecondsAsTime(duration);
+			}
+		}
+
+		function formatSecondsAsTime(secs, format) {
+			var hr = Math.floor(secs / 3600);
+			var min = Math.floor((secs - (hr * 3600)) / 60);
+			var sec = Math.floor(secs - (hr * 3600) - (min * 60));
+
+			if (min < 10) {
+				min = "0" + min;
+			}
+			if (sec < 10) {
+				sec = "0" + sec;
+			}
+
+			return min + ':' + sec;
+		}
+	</script>
+
+}

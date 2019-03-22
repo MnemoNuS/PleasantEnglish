@@ -1,0 +1,111 @@
+﻿@using PleasantEnglish.Models
+
+<div class="widget widget_search">
+	<h3>Search</h3>
+	<form action="@Url.Action("ArticlesList", "Blog", new { id = ""})">
+
+		<input required="required" type="text" name="search" value="@ViewBag.Search" class="text-search" placeholder="Поиск">
+		<input type="submit" value="" class="submit-search">
+	</form>
+</div>
+
+@if (ViewBag.Categories != null)
+{
+	<div class="widget widget_categories group">
+		<h3>Категории</h3>
+		<ul>
+			@foreach (Category category in ViewBag.Categories)
+			{
+				if(category.Articles.Count > 0)
+				{
+					<li>
+						@Html.ActionLink(@category.Name, "ArticlesList", "Blog", new { id = "", category = category.CategoryId }, new { })
+						(@category.Articles.Count)
+					</li>
+				}
+			}
+		</ul>
+	</div>
+}
+
+	@*<div class="widget widget_text group">
+			<h3>Widget Text.</h3>
+
+			<p>Lorem ipsum Ullamco commodo laboris sit dolore commodo aliquip incididunt fugiat esse dolor aute fugiat minim eiusmod do velit labore fugiat officia ad sit culpa labore in consectetur sint cillum sint consectetur voluptate adipisicing Duis irure magna ut sit amet reprehenderit.</p>
+
+		</div>*@
+
+	@if (ViewBag.Tags != null)
+	{
+		<div class="widget widget_tags">
+			<h3>Тэги</h3>
+
+			<div class="tagcloud group">
+				@foreach (Tag tag in ViewBag.Tags)
+				{
+					@Html.ActionLink(@tag.Name, "ArticlesList", "Blog", new { id = "", tag = tag.TagId }, new { })
+				}
+
+			</div>
+
+		</div>
+	}
+
+	@if (ViewBag.BestPosts != null)
+	{
+
+		<div class="widget widget_popular">
+			<h3>Популярные статьи</h3>
+
+			<ul class="link-list" >
+				@{
+					var bestPosts = ViewBag.BestPosts as List<Article>;
+
+					for (var i = 0; i < bestPosts.Count; i++)
+					{
+						var post = bestPosts[i];
+						<li itemscope itemtype="http://schema.org/Article">
+
+							<div style="margin-bottom: 20px; display: flex;">
+								<span class="number">@(i + 1).</span>
+								@Html.ActionLink(
+									post.Title,
+
+									"Index",
+									"Article",
+									new
+									{
+										id = post.ArticleId
+									}, new { style = "line-height: 18px;margin-top: 6px; margin-bottom: 8px;", itemprop = "name" })
+								<p itemprop="description" style="display: none">
+									@Html.Raw(HttpUtility.HtmlDecode(post.Preview.Replace("\r", "<br>")))
+								</p>
+								<div class="views-likes">
+
+									<span name="like">
+										<span class="glyphicon glyphicon glyphicon-heart-empty heart green empty " aria-hidden="true"></span>
+										<span class="green likes-counter">@post.ArticleLikes.Count</span>
+									</span>
+
+									<span class="glyphicon glyphicon-eye-open green eye"
+										  aria-hidden="true"></span>
+									<span class="green eye-counter">@post.ArticleWatches.Count</span>
+
+									@if (post.ArticleComments.Count > 0)
+									{
+										<span class="glyphicon glyphicon-comment green comment"
+											  aria-hidden="true"></span>
+											<span class="green comment-counter" itemprop="commentCount">@post.ArticleComments.Count</span>
+									}
+								</div>
+
+							</div>
+
+						</li>
+					}
+				}
+
+			</ul>
+
+		</div>
+					}

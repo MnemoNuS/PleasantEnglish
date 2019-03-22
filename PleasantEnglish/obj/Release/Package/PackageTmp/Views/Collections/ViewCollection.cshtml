@@ -1,0 +1,434 @@
+﻿@model PleasantEnglish.Models.Collection
+
+@{
+	ViewBag.Title = "ViewCollection";
+}
+<a href="@Url.Action("List","Collections")" class="back-icon"><span class="glyphicon glyphicon-share-alt"></span></a>
+
+<h2>Collection</h2>
+
+<div>
+
+	<div id="collection" collectionId="@Model.CollectionId" class="dictionary col-md-12">
+
+		<div class="collection col-md-12">
+			<div class="col-md-5">
+				<span class="dic-label">Изображение</span>
+				<img src="/Content/images/articles/no-image.png" width="100%" height="auto" />
+			</div>
+			<div class="col-md-4">
+
+				<div class="col-md-12">
+					<span class="glyphicon glyphicon-tag list-icon green"></span>
+					<span class="list-icon green">EN</span>
+					<div>
+						@Html.DisplayFor(model => model.ValueEn)
+					</div>
+				</div>
+				<div class="col-md-12">
+					<span class="glyphicon glyphicon-tag list-icon green"></span>
+					<span class="list-icon green">RU</span>
+					<div>
+						@Html.DisplayFor(model => model.ValueRu)
+					</div>
+				</div>
+			</div>
+
+				<div class="col-md-3">
+					@*//Level*@
+					<span class="list-icon green">Level</span>
+					<div>
+						@Html.DisplayFor(model => model.Level)
+					</div>
+				</div>
+			</div>
+
+
+		<div class=" col-md-12">
+			<h4>Слова в наборе</h4>
+			<table class="table words-collection">
+				<tr>
+					<th>
+						@*//Image*@
+						<span class="glyphicon glyphicon-picture list-icon"></span>
+					</th>
+					<th>
+						@*//Pronunciation*@
+						<span class="glyphicon glyphicon-volume-down list-icon" style="font-size: 25px;"></span>
+					</th>
+					<th>
+						<span class="glyphicon glyphicon-tag list-icon"></span>
+						<span class="list-icon">EN</span>
+					</th>
+					<th>
+						<span class="glyphicon glyphicon-tag list-icon"></span>
+						<span class="list-icon">RU</span>
+					</th>
+					<th>
+						@*//Transcription*@
+						<span class="list-icon">[ə]</span>
+
+					</th>
+					<th>
+						@*//Level*@
+						<span class="list-icon">Level</span>
+					</th>
+					<th>
+						@*//PartOfSpeach*@
+						<span class="list-icon">Part of speach</span>
+					</th>
+					<th>
+						<span class="glyphicon glyphicon-cog list-icon"></span>
+					</th>
+				</tr>
+				@if (Model.Words.Any())
+				{
+					foreach (var item in Model.Words.Select(wc => wc.Word).ToList())
+					{
+						<tr class="word" id="@item.WordId">
+							<td>
+								@if (string.IsNullOrEmpty(item.Image))
+								{
+									<span class="glyphicon glyphicon-remove red list-icon"></span>
+								}
+								else
+								{
+									<span class="glyphicon glyphicon-ok green list-icon"></span>
+								}
+								@*@Html.DisplayFor( modelItem => item.Image )*@
+							</td>
+
+							<td>
+								@*@Html.DisplayFor(modelItem => item.Pronunciation)*@
+
+								<div class="play-sound @( string.IsNullOrEmpty( item.Pronunciation ) ? "disabled-btn" : "" )">
+									<div title="Listen to the pronunciation" class="player-controls">
+										<span class="play">
+											@if (string.IsNullOrEmpty(item.Pronunciation))
+											{
+												<span class="glyphicon glyphicon-volume-off red list-icon"></span>
+											}
+											else
+											{
+												<span class="glyphicon glyphicon-volume-up green list-icon "></span>
+											}
+										</span>
+										<span class="pause">
+											<span class="glyphicon glyphicon-headphones green list-icon "></span>
+										</span>
+
+									</div>
+									<audio class="pronunciation-audio" controls src="@item.Pronunciation"></audio>
+								</div>
+
+							</td>
+
+							<td>
+								@Html.DisplayFor(modelItem => item.ValueEn)
+							</td>
+							<td>
+								@Html.DisplayFor(modelItem => item.ValueRu)
+							</td>
+							<td>
+								@if( string.IsNullOrEmpty( item.Transcription) )
+								{
+									<span class="glyphicon glyphicon-remove red list-icon"></span>
+								}
+								else
+								{
+									@Html.DisplayFor( modelItem => item.Transcription )
+								}							</td>
+							<td>
+								@Html.DisplayFor(modelItem => item.Level)
+							</td>
+							<td>
+								@Html.DisplayFor(modelItem => item.PartOfSpeach)
+							</td>
+							<td>
+								<a href="@Url.Action( "EditWord", "Words", new { id = item.WordId } )" class="edit-icon" target="_blank">
+									<span class="glyphicon glyphicon-pencil"></span>
+								</a>
+								<div class="delete-icon">
+								<button>
+									<span class="glyphicon glyphicon-trash"></span>
+								</button>
+								</div>
+							</td>
+						</tr>
+					}
+				}
+			</table>
+		</div>
+		<div class="col-md-12">
+			<div class="add-to-collection">
+				<form action="/words/findWord" target="_blank" class="col-md-6">
+					<input id="autocomplete" type="text" placeholder="Find ford" name="find" class="col-md-10"> <span class="loading col-md-1"></span>
+				</form>
+			</div>
+		</div>
+		<br/>
+		<br/>
+		</div>
+</div>
+
+@section scripts {
+
+	<script>
+		/*
+			 * jQuery UI Autocomplete: Custom HTML in Dropdown
+			 * https://salman-w.blogspot.com/2013/12/jquery-ui-autocomplete-examples.html
+			 */
+		$(function() {
+			$("#autocomplete").autocomplete({
+				delay: 500,
+				minLength: 3,
+				source: function(request, response) {
+					$.getJSON("/words/findword",
+						// do not copy the api key; get your own
+						{ term: request.term },
+						function(data) {
+							// data is an array of objects and must be transformed for autocomplete to use
+							var array = data.Response === "False"
+								? []
+								: $.map(data,
+									function(word) {
+										return word;
+										//{
+										//image: m.Image === "N/A"
+										//	? null
+										//	: m.Image,
+										//ru: m.ValueRu,
+										//en: m.ValueEn,
+										//url: "/word/" + m.WordId
+										//};
+									});
+							response(array);
+						});
+				},
+				focus: function(event, ui) {
+					// prevent autocomplete from updating the textbox
+					event.preventDefault();
+				},
+				select: function(event, ui) {
+					// prevent autocomplete from updating the textbox
+					event.preventDefault();
+					// navigate to the selected item's url
+					//window.open(ui.item.url);
+					addWord(ui.item);
+				}
+			}).data("ui-autocomplete")._renderItem = function(ul, item) {
+				var $div = $("<div class='m-word'></div>");
+				//if (item.Image) {
+				//	$("<img class='m-icon'>").attr("src", item.Image).appendTo($div);
+				//} else {
+				//	$("<span class='x-icon'>no img</span>").appendTo($div);
+				//}
+				$(
+					'<div class="m-en"><span class="glyphicon glyphicon-tag list-icon green"></span><span class="list-icon green">EN</span>' +
+					item.ValueEn +
+					'</div>').appendTo($div);
+				$(
+					'<div class="m-ru"><span class="glyphicon glyphicon-tag list-icon green"></span><span class="list-icon green">RU</span>' +
+					item.ValueRu +
+					'</div>').appendTo($div);
+				return $("<li></li>").append($div).appendTo(ul);
+			};
+
+			function addWord(word) {
+				var collectionId = $("#collection").attr("collectionId");
+				$.get("/collections/AddWordToCollection", { collectionId: collectionId, wordId: word.WordId}).done(function(data) {
+					if (data == "True") {
+						var wc = $(".words-collection");
+						if (wc.length > 0) {
+							var wordTemtlate = buildWordTemplate(word);
+							wc.append(wordTemtlate);
+							var newWord = $("#" + word.WordId);
+							if (newWord.length > 0) {
+								newWord.find('.delete-icon').click(function() {
+									var id = $(this).parents(".word").attr("id");
+									removeWord(id);
+								});
+								newWord.find('.pronunciation-audio').each(function() {
+									initAudio(this);
+								});
+							}
+						}
+					}
+				});
+
+			}
+
+		});
+		$('.delete-icon').click(function() {
+			var id = $(this).parents(".word").attr("id");
+			removeWord(id);
+		});
+		$(".pronunciation-audio").each(function() {
+			initAudio(this);
+		});
+
+		function initAudio(frame) {
+			var getaudio = $(frame)[0],
+				mouseovertimer,
+				audiostatus = 'off',
+				playerControls = $(frame).parent().find(".player-controls");
+
+			$(playerControls).on('mouseenter',
+				playerControls,
+				function() {
+					getaudio = $(playerControls).parent().find(".pronunciation-audio")[0];
+
+					if (!mouseovertimer) {
+
+						mouseovertimer = window.setTimeout(function() {
+
+								mouseovertimer = null;
+
+								if (!$(playerControls).hasClass("playing")) {
+
+									getaudio.load();
+									getaudio.play();
+									$(playerControls).addClass('playing');
+									return false;
+
+								}
+
+							},
+							2500);
+
+					}
+
+				});
+
+			$(playerControls).on('mouseleave',
+				playerControls,
+				function() {
+					getaudio = $(playerControls).parent().find(".pronunciation-audio")[0];
+
+					if (mouseovertimer) {
+
+						window.clearTimeout(mouseovertimer);
+						mouseovertimer = null;
+
+					}
+
+				});
+
+			$(playerControls).on('click touch',
+				playerControls,
+				function(e) {
+					getaudio = $(playerControls).parent().find(".pronunciation-audio")[0];
+					e.preventDefault();
+					if (!$(playerControls).hasClass("playing")) {
+						if (audiostatus == 'off') {
+							$(playerControls).addClass('playing');
+							getaudio.load();
+							getaudio.play();
+							window.clearTimeout(mouseovertimer);
+							audiostatus = 'on';
+							return false;
+
+						} else if (audiostatus == 'on') {
+							$(playerControls).addClass('playing');
+							getaudio.play();
+						}
+					} else if ($(playerControls).hasClass("playing")) {
+						getaudio.pause();
+						$(playerControls).removeClass('playing');
+						window.clearTimeout(mouseovertimer);
+						audiostatus = 'on';
+					}
+					return false;
+				});
+
+			$(frame).on('ended',
+				function() {
+					getaudio = $(playerControls).parent().find(".pronunciation-audio")[0];
+					$(playerControls).removeClass('playing');
+					audiostatus = 'off';
+				});
+		}
+
+		function removeWord(id) {
+
+			var collectionId = $("#collection").attr("collectionId");
+
+			$.get("/collections/DeleteWordFromCollection", { collectionId: collectionId, wordId: id }).done(function (data) {
+				if (data == "True") {
+					var wc = $("#" + id);
+					if (wc.length > 0) {
+						wc.remove();
+					}
+				}
+			});
+		}
+
+		function buildWordTemplate(w) {
+
+			var image = w.Image == null
+				? '<span class="glyphicon glyphicon-remove red list-icon"></span>'
+				: '<span class="glyphicon glyphicon-ok green list-icon"></span>';
+			var transcription = w.Transcription == null
+				? '<span class="glyphicon glyphicon-remove red list-icon"></span>'
+				: w.Transcription;
+			var havePronunciation = w.Pronunciation == null ? "disabled-btn" : "";
+			var pronunciation = w.Pronunciation == null
+				? '<span class="glyphicon glyphicon-volume-off red list-icon"></span>'
+				: '<span class="glyphicon glyphicon-volume-up green list-icon "></span>';
+
+			var t = '<tr class="word" id="' +
+				w.WordId +
+				'">' +
+				'<td>' +
+				image +
+				'</td>' +
+				'<td>' +
+				'<div class="play-sound ' +
+				havePronunciation +
+				'">' +
+				'<div title="Listen to the pronunciation" class="player-controls">' +
+				'<span class="play">' +
+				pronunciation +
+				'</span>' +
+				'<span class="pause">' +
+				'<span class="glyphicon glyphicon-headphones green list-icon "></span>' +
+				'</span>' +
+				'</div>' +
+				'<audio class="pronunciation-audio" controls src="' +
+				w.Pronunciation +
+				'"></audio>' +
+				'</div>' +
+				'</td>' +
+				'<td>' +
+				w.ValueEn +
+				'</td>' +
+				'<td>' +
+				w.ValueRu +
+				'</td>' +
+				'<td>' +
+				transcription +
+				'</td>' +
+				'<td>' +
+				w.Level +
+				'</td>' +
+				'<td>' +
+				w.PartOfSpeach +
+				'</td>' +
+				'<td>' +
+				'<a href="/words/editword/' +
+				w.WordId +
+				'" class="edit-icon" target="_blank">' +
+				'<span class="glyphicon glyphicon-pencil"></span>' +
+				'</a>' +
+				'<div  class="delete-icon">' +
+				'<button>' +
+				'	<span class="glyphicon glyphicon-trash"></span>' +
+				'</button>' +
+				'</div>' +
+				'</td>' +
+				'</tr>';
+			return t;
+		}
+	</script>
+
+}

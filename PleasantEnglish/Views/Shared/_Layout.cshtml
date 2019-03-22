@@ -1,0 +1,242 @@
+﻿@using PleasantEnglish.Models
+<!DOCTYPE html>
+<html class="no-js">
+<head>
+	@if( ViewBag.CurrentTab != "EditorTab" )
+	{
+		<!--- analytics and ads
+		================================================== -->
+		<!-- Global site tag (gtag.js) - Google Analytics -->
+
+		<script async src="https://www.googletagmanager.com/gtag/js?id=UA-97098014-2"></script>
+
+		<script>
+			window.dataLayer = window.dataLayer || [];
+
+			function gtag() { dataLayer.push(arguments); }
+
+			gtag('js', new Date());
+
+			gtag('config', 'UA-97098014-2');
+		</script>
+
+		<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+
+		<script>
+			(adsbygoogle = window.adsbygoogle || []).push({
+				google_ad_client: "ca-pub-9738865144821998",
+				enable_page_level_ads: true
+			});
+		</script>
+
+		<script async custom-element="amp-auto-ads"
+		        src="https://cdn.ampproject.org/v0/amp-auto-ads-0.1.js">
+		</script>
+
+		<meta name="yandex-verification" content="b2466dd73b2c915c"/>
+	}
+	<!--- Basic Page Needs
+	================================================== -->
+	<meta charset="utf-8">
+	<title>@ViewBag.Title</title>
+	<meta name="author" content="PleasantTeacher"/>
+	<meta name="description" content="@ViewBag.Description"/>
+
+	<!-- mobile specific metas
+	================================================== -->
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+	@RenderSection("meta", required: false)
+
+	@if (!IsSectionDefined("meta"))
+	{
+
+		<meta property="og:url" content="@Request.Url.AbsoluteUri" />
+		<meta property="og:site_name" content="Pleasant English" />
+		<meta property="og:type" content="blog" />
+		<meta property="og:title" content="Pleasant English" />
+		<meta property="og:description" content="You study better if study with pleasure" />
+		<meta property="og:image" content="@($"{Request.Url.Scheme}://{Request.Url.Host}:{Request.Url.Port}/content/images/PE_Default.png")" ) />
+	}
+
+	<!-- CSS
+	================================================== -->
+	@Styles.Render("~/Content/css")
+
+	<link rel="stylesheet" href="/css/default.css">
+	<link rel="stylesheet" href="/css/layout.css">
+	<link rel="stylesheet" href="/css/media-queries.css">
+	<link rel="stylesheet" href="/css/autocomplete.css">
+	<link rel="stylesheet/less" type="text/css" href="/css/site-style.less">
+
+	<!-- Script
+	================================================== -->
+	<script src="/js/less.min.js"></script>
+	@Scripts.Render("~/bundles/modernizr")
+	@Scripts.Render("~/bundles/jquery")
+	@Scripts.Render("~/bundles/bootstrap")
+	<script src='https://www.google.com/recaptcha/api.js'></script>
+	<!-- Favicons
+	================================================== -->
+	<link rel="shortcut icon" href="/favicon.ico">
+
+</head>
+<body>
+	<!-- Header
+	================================================== -->
+	<header id="top">
+
+		<div class="row">
+
+			<div class="header-content twelve columns">
+
+				<h1 id="logo-text"><a href="@Url.Action("Index", "Home")" title="">Pleasant English</a></h1>
+				<p id="intro">You study better if study with pleasure</p>
+
+			</div>
+
+		</div>
+
+		<nav id="nav-wrap">
+			<div class="login-block">
+				<div class="user-info">
+					@if (CurrentUser != null)
+					{
+						<div class="user-img"><img width="25" height="25" src="@($"../../images/userImg/{CurrentUser?.Img ?? "u1.jpg"}")" /></div>
+						@Html.ActionLink(CurrentUser?.Name, "Index", "Manage", null, new { @class = "manage-user-link" })
+						<a class="logoff-link" href="@Url.Action("Logoff", "Account")">
+							Выход
+						</a>
+					}
+					else
+					{
+						@Html.ActionLink("Войти", "Login", "Account", new { returnUrl = @Request.Url.AbsoluteUri }, new { @class = "manage-user-link" })
+					}
+
+				</div>
+			</div>
+
+			<a class="mobile-btn" href="#nav-wrap" title="Show navigation">Показать меню</a>
+			<a class="mobile-btn" href="#" title="Hide navigation">Скрыть меню</a>
+
+			<div class="row">
+
+				<ul id="nav" class="nav">
+					<li class="@(@ViewBag.CurrentTab == "MainTab" ? "current" :"")">
+						<a href="/">Главная</a>
+					</li>
+					@*<li class="has-children">
+							<a href="#">Dropdown</a>
+							<ul>
+								<li><a href="#">Submenu 01</a></li>
+								<li><a href="#">Submenu 02</a></li>
+								<li><a href="#">Submenu 03</a></li>
+							</ul>
+						</li>*@
+					<li class="@(@ViewBag.CurrentTab == "BlogTab" ? "current" :"")">
+						@Html.ActionLink("Статьи", "ArticlesList", "Blog")
+					</li>
+
+					<li class="@(@ViewBag.CurrentTab == "AboutTab" ? "current" :"")">
+						@Html.ActionLink("О проекте ", "About", "Home")
+					</li>
+					<li class="@(@ViewBag.CurrentTab == "ContactTab" ? "current" :"")">
+						@Html.ActionLink("Контакты", "Contact", "Home")
+					</li>
+					<li class="@(@ViewBag.CurrentTab == "InfoTab" ? "current" : "") has-children">
+						@Html.ActionLink("Информация", "Information", "Home")
+						<ul>
+							<li>@Html.ActionLink("Политика конфиденциальности", "PrivacyPolicy", "Home")</li>
+							<li>@Html.ActionLink("Что такое cookie", "Cookies", "Home")</li>
+						</ul>
+					</li>
+					@if (CurrentUser != null && CurrentUser.IsInRole("Admin"))
+					{
+						<li class="@( @ViewBag.CurrentTab == "EditorTab" ? "current" : "" ) has-children">
+							@Html.ActionLink("Редактор", "CreateNew", "Editor")
+							<ul>
+								<li>@Html.ActionLink("Создать статью", "CreateArticle", "Editor")</li>
+								<li>@Html.ActionLink("Создать фотопост", "CreatePhotoPost", "Editor")</li>
+								<li>
+									@Html.ActionLink("Словарь", "Dictionary", "Words")
+								</li>
+								<li>
+									@Html.ActionLink("Наборы слов", "List", "Collections")
+								</li>
+							</ul>
+						</li>
+
+					}
+					@*<li>
+							<a href="archives.html">Архив</a>
+						</li>*@
+
+
+				</ul> <!-- end #nav -->
+
+
+			</div>
+
+		</nav> <!-- end #nav-wrap -->
+
+	</header> <!-- Header End -->
+	<!-- Content
+	================================================== -->
+	<div id="content-wrap">
+
+		<div class="row">
+			<div id="main" class="@(@ViewBag.SideBar != null ? "eight" :"twelve")  columns">
+				@RenderBody()
+			</div> <!-- end main -->
+
+			@if (@ViewBag.SideBar != null)
+			{
+				<div id="sidebar" class="four columns">
+					@Html.Partial("_Sidebar")
+				</div>
+				<!-- end sidebar -->
+			}
+		</div> <!-- end row -->
+
+	</div> <!-- end content-wrap -->
+	<!-- Cookie
+	================================================== -->
+	@if (Request.Cookies[".PECOOKIEACCEPTED"] == null)
+	{
+		<section class="cookies" id="cookies">
+			<div class="cookies-wrap col-md-12">
+				<div class="cookies-text  col-md-6 col-md-offset-1">
+					Наш веб-сайт использует cookie-файлы для сохранения информации на вашем компьютере.
+					Это позволяет обеспечивать удобный просмотр нашего веб-сайта, а также даёт возможность улучшать его.
+					<a href="@Url.Action( "Cookies", "Home" )">Ознакомиться с подробной информацией о файлах cookie</a>
+				</div>
+				<div class="cookies-buttom  col-md-3 col-md-offset-1">
+					<button class="accept-cookies" id="accept-cookies">
+						Принять
+					</button>
+				</div>
+			</div>
+		</section>
+	}
+	<!-- Footer
+		================================================== -->
+	<footer>
+
+		@Html.Partial("_Footer");
+
+		<div id="go-top">
+			<a class="smoothscroll" title="Back to Top" href="#top"><i class="fa fa-chevron-up"></i></a>
+		</div>
+
+	</footer>
+	<!-- End Footer-->
+	<!-- Java Script
+	================================================== -->
+
+	<script type="text/javascript" src="/js/jquery-migrate-1.2.1.min.js"></script>
+	<script src="/js/main.js"></script>
+	<script src="~/js/tinymce/tinymce.min.js"></script>
+	@RenderSection("scripts", required: false)
+
+</body>
+</html>
